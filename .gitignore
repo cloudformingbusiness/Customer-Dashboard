@@ -1,43 +1,38 @@
 # Dependencies
-
+node_modules/
 
 # Build
-
+dist/
+build/
+*.tsbuildinfo
 
 # Environment – NIEMALS committen!
+.env
+.env.local
+.env.*.local
 
-
-
-# Claude Code – persönliche Einstellungen nicht committen
-
+# Claude Code
+.claude/memory/
+.claude/projects/
 
 # OS
-
+.DS_Store
+Thumbs.db
+Desktop.ini
 
 # Logs
-
+*.log
+npm-debug.log*
 
 # IDE
-
+.vscode/settings.json
+.idea/
 
 # Docker
-
-
-# Postman Test-Ergebnisse
-
-
-# Build-Outputs
-
-# Logs
+docker-compose.override.yml
 
 # Test Coverage
+coverage/
 
-
-# Betriebssystem
-
-# IDE
-
-# Docker lokale Overrides
-
-# Lokale Env
-node_modules
+# MCP (projektspezifisch, enthält evtl. API Keys)
+.mcp.json
