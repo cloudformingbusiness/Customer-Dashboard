@@ -112,6 +112,15 @@ export function extractExecutionError(execution: IN8nExecution): { node: string;
   }
 }
 
+/** Einzelne Ausführung löschen */
+export async function deleteExecution(id: string): Promise<void> {
+  const res = await fetch(`${N8N_BASE_URL}/api/v1/executions/${id}`, {
+    method: 'DELETE',
+    headers,
+  })
+  if (!res.ok) throw new Error(`n8n deleteExecution failed: ${res.statusText}`)
+}
+
 // ── Webhook Trigger ──────────────────────────────────────────
 
 /**

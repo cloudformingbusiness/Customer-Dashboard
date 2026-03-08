@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { Save, Phone, Globe, Webhook, Settings2, ExternalLink, Cpu, Play, Square, CheckCircle, XCircle, Clock, Activity, Send, MessageSquare, Loader2 } from 'lucide-react'
+import { Save, Phone, Globe, Webhook, Settings2, ExternalLink, Cpu, Play, Square, CheckCircle, XCircle, Clock, Activity, Send, MessageSquare, Loader2, Trash2, MessageCircle } from 'lucide-react'
 import { PageHeader, Spinner, Card, Badge } from '../../../components/ui'
 import type { BadgeVariant } from '../../../components/ui'
 import {
@@ -8,11 +8,12 @@ import {
   useVoiceAgentN8nStatus,
   useVoiceAgentN8nActivate,
   useVoiceAgentN8nDeactivate,
+  useVoiceAgentN8nResetExecutions,
 } from '../../../hooks/useApi'
 
 // ── Provider definitions ─────────────────────────────────────
 
-type ProviderType = 'retell' | 'vapi' | 'bland' | 'n8n' | 'custom'
+type ProviderType = 'retell' | 'vapi' | 'bland' | 'n8n' | 'telegram' | 'whatsapp' | 'custom'
 
 interface IProviderOption {
   id: ProviderType
@@ -94,6 +95,33 @@ const PROVIDERS: IProviderOption[] = [
     ],
   },
   {
+    id: 'telegram',
+    name: 'Telegram Bot',
+    description: 'KI-Chatbot via Telegram. Ideal fuer textbasierten Kundensupport und Benachrichtigungen.',
+    icon: <Send size={24} className="text-sky-500" />,
+    website: 'https://core.telegram.org/bots',
+    fields: [
+      { key: 'bot_token', label: 'Bot Token', type: 'password', placeholder: '123456:ABC-DEF...', required: true, helpText: 'Token vom @BotFather' },
+      { key: 'chat_id', label: 'Chat ID (optional)', type: 'text', placeholder: '-100123456789', helpText: 'Standard-Chat oder Gruppen-ID' },
+      { key: 'n8n_webhook_url', label: 'n8n Webhook URL', type: 'url', placeholder: 'https://n8ndeploy.cloudforming.de/webhook/telegram-bot', helpText: 'Webhook-URL des n8n-Workflows fuer Telegram-Nachrichten' },
+      ...COMMON_FIELDS,
+    ],
+  },
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp Business',
+    description: 'KI-Agent via WhatsApp Business API. Fuer Kundenservice ueber WhatsApp.',
+    icon: <MessageCircle size={24} className="text-green-500" />,
+    website: 'https://business.whatsapp.com',
+    fields: [
+      { key: 'phone_number_id', label: 'Phone Number ID', type: 'text', placeholder: '1234567890', required: true, helpText: 'WhatsApp Business Phone Number ID' },
+      { key: 'access_token', label: 'Access Token', type: 'password', placeholder: 'EAAG...', required: true, helpText: 'Meta / WhatsApp Business API Token' },
+      { key: 'verify_token', label: 'Verify Token', type: 'text', placeholder: 'mein-verify-token', helpText: 'Webhook-Verifizierungstoken' },
+      { key: 'n8n_webhook_url', label: 'n8n Webhook URL', type: 'url', placeholder: 'https://n8ndeploy.cloudforming.de/webhook/whatsapp-bot', helpText: 'Webhook-URL des n8n-Workflows fuer WhatsApp-Nachrichten' },
+      ...COMMON_FIELDS,
+    ],
+  },
+  {
     id: 'custom',
     name: 'Custom Provider',
     description: 'Eigener oder anderer Voice Agent Provider. Daten werden per Webhook empfangen.',
@@ -122,6 +150,7 @@ function N8nWorkflowPanel({ workflowId }: { workflowId: string }) {
   const { data: status, isLoading, isError } = useVoiceAgentN8nStatus(workflowId)
   const activateMutation = useVoiceAgentN8nActivate(workflowId)
   const deactivateMutation = useVoiceAgentN8nDeactivate(workflowId)
+  const resetMutation = useVoiceAgentN8nResetExecutions(workflowId)
 
   if (!workflowId) return null
 
@@ -223,7 +252,23 @@ function N8nWorkflowPanel({ workflowId }: { workflowId: string }) {
       {/* Recent executions */}
       {recentExecutions.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Letzte Ausfuehrungen</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-700">Letzte Ausfuehrungen</h3>
+            <button
+              type="button"
+              onClick={() => resetMutation.mutate(undefined as never)}
+              disabled={resetMutation.isPending}
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+              title="Alle Ausfuehrungen loeschen"
+            >
+              {resetMutation.isPending ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Trash2 size={12} />
+              )}
+              Zuruecksetzen
+            </button>
+          </div>
           <div className="space-y-1.5">
             {recentExecutions.slice(0, 5).map((exec) => (
               <div key={exec.id} className={`text-xs rounded-lg px-3 py-2 ${exec.status === 'error' ? 'bg-red-50' : 'bg-gray-50'}`}>
@@ -456,6 +501,219 @@ function VoiceAgentTestPanel({ webhookUrl }: { webhookUrl: string }) {
   )
 }
 
+// ── Telegram Test Panel ──────────────────────────────────────
+
+interface ITelegramTestResult {
+  bot_valid: boolean
+  bot_id?: number
+  bot_name?: string
+  bot_username?: string
+  message_sent?: boolean
+  message_error?: string
+}
+
+const TELEGRAM_EXAMPLE_MESSAGES = [
+  'Hallo! Das ist eine Testnachricht vom Dashboard.',
+  'Der Telegram Bot funktioniert einwandfrei!',
+  'Test: Verbindung zum Bot erfolgreich hergestellt.',
+]
+
+function TelegramTestPanel({ botToken, chatId }: { botToken: string; chatId: string }) {
+  const [testMessage, setTestMessage] = useState(TELEGRAM_EXAMPLE_MESSAGES[0])
+  const [isTesting, setIsTesting] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [testResult, setTestResult] = useState<ITelegramTestResult | null>(null)
+  const [testError, setTestError] = useState<string | null>(null)
+
+  const apiBase = window.location.origin.replace(/:\d+$/, ':3000')
+
+  const handleVerify = async () => {
+    setIsVerifying(true)
+    setTestResult(null)
+    setTestError(null)
+
+    try {
+      const res = await fetch(`${apiBase}/api/voice-agent/telegram/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bot_token: botToken }),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: res.statusText })) as { error?: string }
+        throw new Error(errData.error || `HTTP ${res.status}`)
+      }
+
+      const { data } = await res.json() as { data: ITelegramTestResult }
+      setTestResult(data)
+    } catch (err) {
+      setTestError((err as Error).message)
+    } finally {
+      setIsVerifying(false)
+    }
+  }
+
+  const handleSendTest = async () => {
+    setIsTesting(true)
+    setTestResult(null)
+    setTestError(null)
+
+    try {
+      const res = await fetch(`${apiBase}/api/voice-agent/telegram/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bot_token: botToken,
+          chat_id: chatId,
+          message: testMessage,
+        }),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: res.statusText })) as { error?: string }
+        throw new Error(errData.error || `HTTP ${res.status}`)
+      }
+
+      const { data } = await res.json() as { data: ITelegramTestResult }
+      setTestResult(data)
+    } catch (err) {
+      setTestError((err as Error).message)
+    } finally {
+      setIsTesting(false)
+    }
+  }
+
+  return (
+    <Card className="p-6 border-sky-200 bg-sky-50/30">
+      <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
+        <Send size={20} className="text-sky-500" />
+        Telegram Bot testen
+      </h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Pruefe ob der Bot-Token gueltig ist und sende eine Testnachricht.
+      </p>
+
+      {/* Step 1: Verify bot token */}
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={handleVerify}
+          disabled={isVerifying || !botToken}
+          className="flex items-center gap-2 bg-sky-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
+        >
+          {isVerifying ? (
+            <><Loader2 size={16} className="animate-spin" /> Pruefe Token...</>
+          ) : (
+            <><Activity size={16} /> Bot-Token pruefen</>
+          )}
+        </button>
+      </div>
+
+      {/* Step 2: Send test message (only if chat_id is provided) */}
+      {chatId && (
+        <div className="border-t border-sky-200 pt-4 mt-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Testnachricht senden</h3>
+
+          <div className="flex flex-wrap gap-2 mb-3">
+            {TELEGRAM_EXAMPLE_MESSAGES.map((msg, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setTestMessage(msg)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                  testMessage === msg
+                    ? 'bg-sky-100 border-sky-300 text-sky-700'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-sky-200 hover:bg-sky-50'
+                }`}
+              >
+                {msg.length > 40 ? msg.substring(0, 40) + '...' : msg}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              value={testMessage}
+              onChange={(e) => setTestMessage(e.target.value)}
+              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none text-sm"
+              placeholder="Nachricht eingeben..."
+            />
+            <button
+              type="button"
+              onClick={handleSendTest}
+              disabled={isTesting || !botToken || !testMessage.trim()}
+              className="flex items-center gap-2 bg-sky-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-sky-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+              {isTesting ? (
+                <><Loader2 size={16} className="animate-spin" /> Sende...</>
+              ) : (
+                <><Send size={16} /> Senden</>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Result */}
+      {testResult && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            {testResult.bot_valid ? (
+              <CheckCircle size={16} className="text-green-500" />
+            ) : (
+              <XCircle size={16} className="text-red-500" />
+            )}
+            <span className={`text-sm font-medium ${testResult.bot_valid ? 'text-green-700' : 'text-red-700'}`}>
+              {testResult.bot_valid ? 'Bot-Token gueltig' : 'Bot-Token ungueltig'}
+            </span>
+          </div>
+
+          {testResult.bot_valid && (
+            <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+              <p className="text-sm text-gray-700">
+                <span className="font-medium">Bot:</span> {testResult.bot_name} (@{testResult.bot_username})
+              </p>
+              <p className="text-xs text-gray-500">ID: {testResult.bot_id}</p>
+            </div>
+          )}
+
+          {testResult.message_sent && (
+            <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
+              <CheckCircle size={14} className="text-green-500" />
+              <span className="text-sm text-green-700">Testnachricht erfolgreich gesendet!</span>
+            </div>
+          )}
+
+          {testResult.message_error && (
+            <div className="flex items-center gap-2 bg-red-50 rounded-lg p-3">
+              <XCircle size={14} className="text-red-500" />
+              <span className="text-sm text-red-600">{testResult.message_error}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Error */}
+      {testError && (
+        <div className="bg-red-50 rounded-lg border border-red-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <XCircle size={16} className="text-red-500" />
+            <span className="text-sm font-medium text-red-700">Test fehlgeschlagen</span>
+          </div>
+          <p className="text-sm text-red-600">{testError}</p>
+        </div>
+      )}
+
+      {!chatId && (
+        <p className="text-xs text-gray-400 mt-2">
+          Trage eine Chat ID ein, um auch eine Testnachricht senden zu koennen.
+        </p>
+      )}
+    </Card>
+  )
+}
+
 // ── Main Component ───────────────────────────────────────────
 
 const DEFAULT_N8N_WORKFLOW_ID = 'CLKxBg3U2WBsVf0s'
@@ -633,15 +891,28 @@ export default function VoiceAgentConfigPage() {
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm"
                   />
                 ) : (
-                  <input
-                    id={field.key}
-                    type={field.type}
-                    value={settings[field.key] || ''}
-                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm"
-                  />
+                  <div className={field.type === 'url' ? 'flex gap-2' : ''}>
+                    <input
+                      id={field.key}
+                      type={field.type}
+                      value={settings[field.key] || ''}
+                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm"
+                    />
+                    {field.type === 'url' && settings[field.key] && (
+                      <a
+                        href={settings[field.key]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-3 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-600 hover:text-primary transition-colors whitespace-nowrap shrink-0"
+                      >
+                        <ExternalLink size={14} />
+                        Oeffnen
+                      </a>
+                    )}
+                  </div>
                 )}
                 {field.helpText && (
                   <p className="text-xs text-gray-400 mt-1">{field.helpText}</p>
@@ -697,6 +968,9 @@ export default function VoiceAgentConfigPage() {
         {/* ── Test Panel ───────────────────────────────────── */}
         {selectedProvider === 'n8n' && settings.n8n_webhook_url && (
           <VoiceAgentTestPanel webhookUrl={settings.n8n_webhook_url} />
+        )}
+        {selectedProvider === 'telegram' && settings.bot_token && (
+          <TelegramTestPanel botToken={settings.bot_token} chatId={settings.chat_id || ''} />
         )}
 
         {/* ── Active Toggle + Save ──────────────────────────── */}

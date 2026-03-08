@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { getCalls, getCallById, createCall, updateCall, getStats, getConfig, upsertConfig } from './service'
-import { getWorkflow, getExecutions, getExecution, extractExecutionError, activateWorkflow, deactivateWorkflow } from '../../lib/n8n'
+import { getWorkflow, getExecutions, getExecution, extractExecutionError, activateWorkflow, deactivateWorkflow, deleteExecution } from '../../lib/n8n'
 
 const router = Router()
 
@@ -50,6 +50,64 @@ router.post('/webhook', async (req: Request, res: Response) => {
 
     const data = await createCall(req.body)
     res.status(201).json({ data })
+  } catch (err) { res.status(500).json({ error: (err as Error).message }) }
+})
+
+// ── Telegram Bot Test ─────────────────────────────────────────
+router.post('/telegram/test', async (req: Request, res: Response) => {
+  try {
+    const { bot_token, chat_id, message } = req.body as {
+      bot_token?: string
+      chat_id?: string
+      message?: string
+    }
+
+    console.log('[Telegram Test] Received bot_token:', bot_token ? `${bot_token.substring(0, 6)}...` : '(empty)', 'chat_id:', chat_id || '(none)')
+
+    if (!bot_token) {
+      res.status(400).json({ error: 'bot_token ist erforderlich' })
+      return
+    }
+
+    // 1. Verify bot token via getMe
+    const meRes = await fetch(`https://api.telegram.org/bot${bot_token}/getMe`)
+    const meData = await meRes.json() as { ok: boolean; result?: { id: number; first_name: string; username: string }; description?: string }
+
+    if (!meData.ok) {
+      res.status(400).json({
+        error: `Bot-Token ungueltig: ${meData.description || 'Unbekannter Fehler'}`,
+        bot_valid: false,
+      })
+      return
+    }
+
+    const botInfo = meData.result!
+    const result: Record<string, unknown> = {
+      bot_valid: true,
+      bot_id: botInfo.id,
+      bot_name: botInfo.first_name,
+      bot_username: botInfo.username,
+      message_sent: false,
+    }
+
+    // 2. Optionally send a test message
+    if (chat_id) {
+      const text = message || `Testnachricht vom Dashboard. Bot "${botInfo.first_name}" funktioniert!`
+      const sendRes = await fetch(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id, text, parse_mode: 'HTML' }),
+      })
+      const sendData = await sendRes.json() as { ok: boolean; description?: string }
+
+      if (sendData.ok) {
+        result.message_sent = true
+      } else {
+        result.message_error = sendData.description || 'Nachricht konnte nicht gesendet werden'
+      }
+    }
+
+    res.json({ data: result })
   } catch (err) { res.status(500).json({ error: (err as Error).message }) }
 })
 
@@ -107,6 +165,14 @@ router.get('/n8n/status/:workflowId', async (req: Request, res: Response) => {
         n8nUrl: process.env.N8N_API_URL,
       },
     })
+  } catch (err) { res.status(500).json({ error: (err as Error).message }) }
+})
+
+router.delete('/n8n/executions/:workflowId', async (req: Request, res: Response) => {
+  try {
+    const executions = await getExecutions(req.params.workflowId, 100)
+    await Promise.all(executions.map((e) => deleteExecution(e.id)))
+    res.json({ data: { deleted: executions.length } })
   } catch (err) { res.status(500).json({ error: (err as Error).message }) }
 })
 

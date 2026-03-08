@@ -139,3 +139,10 @@ export const useVoiceAgentN8nDeactivate = (workflowId: string) => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['voice-agent', 'n8n', workflowId] }),
   })
 }
+export const useVoiceAgentN8nResetExecutions = (workflowId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => apiFetch<IApiResponse<{ deleted: number }>>(`/api/voice-agent/n8n/executions/${workflowId}`, { method: 'DELETE' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['voice-agent', 'n8n', workflowId] }),
+  })
+}

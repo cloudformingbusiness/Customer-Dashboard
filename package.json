@@ -1,6 +1,6 @@
 {
   "name": "customer-dashboard",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Modulares Kunden-Dashboard – Automationen, KPIs, Incidents, Roadmap",
   "private": true,
   "scripts": {

@@ -1,0 +1,225 @@
+{
+  "name": "Telegram Bot – KI-Assistent",
+  "id": "mtPRiTba4ghxV6Zn",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "trigger",
+      "name": "Telegram Nachricht empfangen",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "credentials": {
+        "telegramApi": { "id": "6beMALfXGaXanChf", "name": "Telegram account" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "voice_check",
+              "operator": { "type": "string", "operation": "isNotEmpty", "singleValue": true },
+              "leftValue": "={{ $json.message.voice }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "check_type",
+      "name": "Text oder Voice?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [224, 0]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/getFile?file_id={{ $json.message.voice.file_id }}",
+        "options": {}
+      },
+      "id": "get_file",
+      "name": "Voice Datei holen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [448, -128]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot{{ $env.TELEGRAM_BOT_TOKEN }}/{{ $json.result.file_path }}",
+        "options": {
+          "response": { "response": { "responseFormat": "file" } }
+        }
+      },
+      "id": "download_audio",
+      "name": "Audio herunterladen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [672, -128]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "whisper-1" },
+            { "name": "language", "value": "de" },
+            { "parameterType": "formBinaryData", "name": "file", "inputDataFieldName": "data" }
+          ]
+        },
+        "options": {
+          "headers": {
+            "parameters": [
+              { "name": "Authorization", "value": "=Bearer {{ $env.OPENAI_API_KEY }}" }
+            ]
+          }
+        }
+      },
+      "id": "whisper",
+      "name": "Whisper STT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, -128]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "user_text", "name": "user_text", "value": "={{ $json.text }}", "type": "string" },
+            { "id": "chat_id", "name": "chat_id", "value": "={{ $('Telegram Nachricht empfangen').item.json.message.chat.id }}", "type": "string" },
+            { "id": "user_name", "name": "user_name", "value": "={{ $('Telegram Nachricht empfangen').item.json.message.from.first_name }}", "type": "string" },
+            { "id": "is_voice", "name": "is_voice", "value": true, "type": "boolean" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set_voice_text",
+      "name": "Voice Text setzen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1104, -128]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "user_text", "name": "user_text", "value": "={{ $json.message.text }}", "type": "string" },
+            { "id": "chat_id", "name": "chat_id", "value": "={{ $json.message.chat.id }}", "type": "string" },
+            { "id": "user_name", "name": "user_name", "value": "={{ $json.message.from.first_name }}", "type": "string" },
+            { "id": "is_voice", "name": "is_voice", "value": false, "type": "boolean" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set_text_msg",
+      "name": "Text setzen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [448, 128]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o\",\n  \"temperature\": 0.7,\n  \"max_tokens\": 500,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein freundlicher und professioneller KI-Assistent fuer den Telegram Bot von FlowTecsMedia. Antworte auf Deutsch, kurz und praezise (max 2-3 Saetze). Sei hilfsbereit. Wenn du etwas nicht beantworten kannst, sage es ehrlich.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.user_text }}\"\n    }\n  ]\n}",
+        "options": {
+          "headers": {
+            "parameters": [
+              { "name": "Authorization", "value": "=Bearer {{ $env.OPENAI_API_KEY }}" }
+            ]
+          }
+        }
+      },
+      "id": "openai",
+      "name": "OpenAI Antwort",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1328, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "reply_text", "name": "reply_text", "value": "={{ $json.choices[0].message.content }}", "type": "string" },
+            { "id": "chat_id", "name": "chat_id", "value": "={{ $json.chat_id }}", "type": "string" },
+            { "id": "user_name", "name": "user_name", "value": "={{ $json.user_name }}", "type": "string" },
+            { "id": "user_text", "name": "user_text", "value": "={{ $json.user_text }}", "type": "string" },
+            { "id": "is_voice", "name": "is_voice", "value": "={{ $json.is_voice }}", "type": "boolean" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract_reply",
+      "name": "Antwort extrahieren",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1552, 0]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.reply_text }}",
+        "additionalFields": { "appendAttribution": false }
+      },
+      "id": "send_reply",
+      "name": "Telegram Antwort senden",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1760, 0],
+      "credentials": {
+        "telegramApi": { "id": "6beMALfXGaXanChf", "name": "Telegram account" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/voice-agent/webhook",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"caller_number\": \"telegram:{{ $json.chat_id }}\",\n  \"callee_number\": \"bot\",\n  \"direction\": \"inbound\",\n  \"status\": \"completed\",\n  \"sentiment\": \"neutral\",\n  \"summary\": \"{{ $json.user_text }}\",\n  \"transcript\": \"User: {{ $json.user_text }}\\nBot: {{ $json.reply_text }}\",\n  \"provider\": \"telegram\",\n  \"metadata\": {\n    \"user_name\": \"{{ $json.user_name }}\",\n    \"is_voice\": {{ $json.is_voice }},\n    \"channel\": \"telegram\"\n  }\n}",
+        "options": {
+          "headers": {
+            "parameters": [
+              { "name": "x-webhook-secret", "value": "={{ $env.VOICE_AGENT_WEBHOOK_SECRET }}" }
+            ]
+          }
+        }
+      },
+      "id": "log_dashboard",
+      "name": "An Dashboard loggen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1984, 0],
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Telegram Nachricht empfangen": { "main": [[{ "node": "Text oder Voice?", "type": "main", "index": 0 }]] },
+    "Text oder Voice?": { "main": [[{ "node": "Voice Datei holen", "type": "main", "index": 0 }], [{ "node": "Text setzen", "type": "main", "index": 0 }]] },
+    "Voice Datei holen": { "main": [[{ "node": "Audio herunterladen", "type": "main", "index": 0 }]] },
+    "Audio herunterladen": { "main": [[{ "node": "Whisper STT", "type": "main", "index": 0 }]] },
+    "Whisper STT": { "main": [[{ "node": "Voice Text setzen", "type": "main", "index": 0 }]] },
+    "Voice Text setzen": { "main": [[{ "node": "OpenAI Antwort", "type": "main", "index": 0 }]] },
+    "Text setzen": { "main": [[{ "node": "OpenAI Antwort", "type": "main", "index": 0 }]] },
+    "OpenAI Antwort": { "main": [[{ "node": "Antwort extrahieren", "type": "main", "index": 0 }]] },
+    "Antwort extrahieren": { "main": [[{ "node": "Telegram Antwort senden", "type": "main", "index": 0 }]] },
+    "Telegram Antwort senden": { "main": [[{ "node": "An Dashboard loggen", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  }
+}
