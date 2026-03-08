@@ -112,7 +112,7 @@ export const useVoiceAgentConfigMutation = () =>
 // Voice Agent – n8n Workflow Status
 export interface IN8nWorkflowStatus {
   workflow: { id: string; name: string; active: boolean; updatedAt: string }
-  recentExecutions: { id: string; status: string; startedAt: string; stoppedAt?: string }[]
+  recentExecutions: { id: string; status: string; startedAt: string; stoppedAt?: string; errorNode?: string; errorMessage?: string }[]
   n8nUrl: string
 }
 export const useVoiceAgentN8nStatus = (workflowId: string) => {

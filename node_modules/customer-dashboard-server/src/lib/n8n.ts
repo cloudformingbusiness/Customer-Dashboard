@@ -90,11 +90,26 @@ export async function getExecutions(workflowId: string, limit = 20): Promise<IN8
   return data.data
 }
 
-/** Einzelne Ausführung abrufen */
-export async function getExecution(id: string): Promise<IN8nExecution> {
-  const res = await fetch(`${N8N_BASE_URL}/api/v1/executions/${id}`, { headers })
+/** Einzelne Ausführung abrufen (mit Daten für Fehlerdetails) */
+export async function getExecution(id: string, includeData = false): Promise<IN8nExecution> {
+  const url = includeData
+    ? `${N8N_BASE_URL}/api/v1/executions/${id}?includeData=true`
+    : `${N8N_BASE_URL}/api/v1/executions/${id}`
+  const res = await fetch(url, { headers })
   if (!res.ok) throw new Error(`n8n getExecution failed: ${res.statusText}`)
   return res.json() as Promise<IN8nExecution>
+}
+
+/** Fehlerdetails aus einer Execution extrahieren */
+export function extractExecutionError(execution: IN8nExecution): { node: string; message: string } | null {
+  const data = (execution as Record<string, unknown>).data as Record<string, unknown> | undefined
+  if (!data?.resultData) return null
+  const resultData = data.resultData as { error?: { message?: string; node?: { name?: string } }; lastNodeExecuted?: string }
+  if (!resultData.error) return null
+  return {
+    node: resultData.error.node?.name || resultData.lastNodeExecuted || 'Unbekannt',
+    message: resultData.error.message || 'Unbekannter Fehler',
+  }
 }
 
 // ── Webhook Trigger ──────────────────────────────────────────

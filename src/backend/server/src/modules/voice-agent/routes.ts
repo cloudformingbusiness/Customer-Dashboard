@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { getCalls, getCallById, createCall, updateCall, getStats, getConfig, upsertConfig } from './service'
-import { getWorkflow, getExecutions, activateWorkflow, deactivateWorkflow } from '../../lib/n8n'
+import { getWorkflow, getExecutions, getExecution, extractExecutionError, activateWorkflow, deactivateWorkflow } from '../../lib/n8n'
 
 const router = Router()
 
@@ -38,6 +38,16 @@ router.patch('/calls/:id', async (req: Request, res: Response) => {
 // ── Webhook (provider-agnostic) ──────────────────────────────
 router.post('/webhook', async (req: Request, res: Response) => {
   try {
+    // Webhook Secret verifizieren
+    const expectedSecret = process.env.VOICE_AGENT_WEBHOOK_SECRET
+    if (expectedSecret) {
+      const providedSecret = req.headers['x-webhook-secret'] as string
+      if (providedSecret !== expectedSecret) {
+        res.status(401).json({ error: 'Ungültiges Webhook Secret' })
+        return
+      }
+    }
+
     const data = await createCall(req.body)
     res.status(201).json({ data })
   } catch (err) { res.status(500).json({ error: (err as Error).message }) }
@@ -59,6 +69,32 @@ router.get('/n8n/status/:workflowId', async (req: Request, res: Response) => {
   try {
     const workflow = await getWorkflow(req.params.workflowId)
     const executions = await getExecutions(req.params.workflowId, 10)
+
+    // Fehlerdetails für fehlgeschlagene Executions laden
+    const enrichedExecutions = await Promise.all(
+      executions.map(async (e) => {
+        const base = {
+          id: e.id,
+          status: e.status,
+          startedAt: e.startedAt,
+          stoppedAt: e.stoppedAt,
+          errorNode: undefined as string | undefined,
+          errorMessage: undefined as string | undefined,
+        }
+        if (e.status === 'error') {
+          try {
+            const detail = await getExecution(e.id, true)
+            const err = extractExecutionError(detail)
+            if (err) {
+              base.errorNode = err.node
+              base.errorMessage = err.message
+            }
+          } catch { /* Fehlerdetails nicht verfügbar */ }
+        }
+        return base
+      })
+    )
+
     res.json({
       data: {
         workflow: {
@@ -67,12 +103,7 @@ router.get('/n8n/status/:workflowId', async (req: Request, res: Response) => {
           active: workflow.active,
           updatedAt: workflow.updatedAt,
         },
-        recentExecutions: executions.map((e) => ({
-          id: e.id,
-          status: e.status,
-          startedAt: e.startedAt,
-          stoppedAt: e.stoppedAt,
-        })),
+        recentExecutions: enrichedExecutions,
         n8nUrl: process.env.N8N_API_URL,
       },
     })

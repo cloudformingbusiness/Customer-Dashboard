@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { Save, Phone, Globe, Webhook, Settings2, ExternalLink, Cpu, Play, Square, CheckCircle, XCircle, Clock, Activity } from 'lucide-react'
+import { Save, Phone, Globe, Webhook, Settings2, ExternalLink, Cpu, Play, Square, CheckCircle, XCircle, Clock, Activity, Send, MessageSquare, Loader2 } from 'lucide-react'
 import { PageHeader, Spinner, Card, Badge } from '../../../components/ui'
 import type { BadgeVariant } from '../../../components/ui'
 import {
@@ -226,22 +226,35 @@ function N8nWorkflowPanel({ workflowId }: { workflowId: string }) {
           <h3 className="text-sm font-medium text-gray-700 mb-2">Letzte Ausfuehrungen</h3>
           <div className="space-y-1.5">
             {recentExecutions.slice(0, 5).map((exec) => (
-              <div key={exec.id} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
-                <div className="flex items-center gap-2">
-                  {exec.status === 'success' ? (
-                    <CheckCircle size={14} className="text-green-500" />
-                  ) : exec.status === 'error' ? (
-                    <XCircle size={14} className="text-red-500" />
-                  ) : (
-                    <Clock size={14} className="text-yellow-500" />
-                  )}
-                  <Badge variant={EXEC_STATUS_VARIANT[exec.status] ?? 'gray'}>
-                    {exec.status}
-                  </Badge>
+              <div key={exec.id} className={`text-xs rounded-lg px-3 py-2 ${exec.status === 'error' ? 'bg-red-50' : 'bg-gray-50'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {exec.status === 'success' ? (
+                      <CheckCircle size={14} className="text-green-500" />
+                    ) : exec.status === 'error' ? (
+                      <XCircle size={14} className="text-red-500" />
+                    ) : (
+                      <Clock size={14} className="text-yellow-500" />
+                    )}
+                    <Badge variant={EXEC_STATUS_VARIANT[exec.status] ?? 'gray'}>
+                      {exec.status === 'success' ? 'Erfolgreich' : exec.status === 'error' ? 'Fehler' : exec.status}
+                    </Badge>
+                    {exec.stoppedAt && exec.startedAt && (
+                      <span className="text-gray-400">
+                        {((new Date(exec.stoppedAt).getTime() - new Date(exec.startedAt).getTime()) / 1000).toFixed(1)}s
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-gray-500">
+                    {new Date(exec.startedAt).toLocaleString('de-DE')}
+                  </span>
                 </div>
-                <span className="text-gray-500">
-                  {new Date(exec.startedAt).toLocaleString('de-DE')}
-                </span>
+                {exec.status === 'error' && exec.errorMessage && (
+                  <div className="mt-1.5 pl-6 text-red-600">
+                    <span className="font-medium">{exec.errorNode}:</span>{' '}
+                    {exec.errorMessage}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -250,6 +263,194 @@ function N8nWorkflowPanel({ workflowId }: { workflowId: string }) {
 
       {recentExecutions.length === 0 && (
         <p className="text-xs text-gray-400">Noch keine Ausfuehrungen vorhanden.</p>
+      )}
+    </Card>
+  )
+}
+
+// ── Test Panel ───────────────────────────────────────────────
+
+interface ITestResult {
+  response_text: string
+  sentiment: string
+  status: string
+  audio_available: boolean
+}
+
+const EXAMPLE_MESSAGES = [
+  'Hallo, ich haette gerne Informationen zu euren Dienstleistungen.',
+  'Ich bin sehr unzufrieden mit eurem Service! Nichts funktioniert!',
+  'Vielen Dank, ihr habt mir super geholfen! Alles laeuft perfekt.',
+  'Koennen Sie mich bitte mit einem Mitarbeiter verbinden?',
+  'Was sind eure Oeffnungszeiten?',
+]
+
+const SENTIMENT_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  positive: { bg: 'bg-green-100', text: 'text-green-700', label: 'Positiv' },
+  neutral: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Neutral' },
+  negative: { bg: 'bg-red-100', text: 'text-red-700', label: 'Negativ' },
+}
+
+function VoiceAgentTestPanel({ webhookUrl }: { webhookUrl: string }) {
+  const [testMessage, setTestMessage] = useState(EXAMPLE_MESSAGES[0])
+  const [callerNumber, setCallerNumber] = useState('+49 151 12345678')
+  const [isTesting, setIsTesting] = useState(false)
+  const [testResult, setTestResult] = useState<ITestResult | null>(null)
+  const [testError, setTestError] = useState<string | null>(null)
+  const [durationMs, setDurationMs] = useState<number | null>(null)
+
+  const handleTest = async () => {
+    setIsTesting(true)
+    setTestResult(null)
+    setTestError(null)
+    setDurationMs(null)
+
+    const start = Date.now()
+    try {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: testMessage,
+          caller_number: callerNumber,
+          callee_number: '+49 89 00000000',
+        }),
+      })
+
+      setDurationMs(Date.now() - start)
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => res.statusText)
+        throw new Error(`HTTP ${res.status}: ${errText}`)
+      }
+
+      const data = await res.json() as ITestResult
+      setTestResult(data)
+    } catch (err) {
+      setDurationMs(Date.now() - start)
+      setTestError((err as Error).message)
+    } finally {
+      setIsTesting(false)
+    }
+  }
+
+  const sentimentStyle = testResult?.sentiment
+    ? SENTIMENT_STYLES[testResult.sentiment.toLowerCase()] ?? SENTIMENT_STYLES.neutral
+    : null
+
+  return (
+    <Card className="p-6 border-blue-200 bg-blue-50/30">
+      <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
+        <MessageSquare size={20} className="text-blue-600" />
+        Voice Agent testen
+      </h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Simuliere einen Anruf mit Text und erhalte die KI-Antwort in Echtzeit.
+      </p>
+
+      {/* Example chips */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {EXAMPLE_MESSAGES.map((msg, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setTestMessage(msg)}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              testMessage === msg
+                ? 'bg-blue-100 border-blue-300 text-blue-700'
+                : 'bg-white border-gray-200 text-gray-600 hover:border-blue-200 hover:bg-blue-50'
+            }`}
+          >
+            {msg.length > 40 ? msg.substring(0, 40) + '...' : msg}
+          </button>
+        ))}
+      </div>
+
+      {/* Input fields */}
+      <div className="space-y-3 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Nachricht (simulierter Anruftext)</label>
+          <textarea
+            value={testMessage}
+            onChange={(e) => setTestMessage(e.target.value)}
+            rows={2}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm"
+            placeholder="Was der Anrufer sagt..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Anrufernummer (optional)</label>
+          <input
+            type="text"
+            value={callerNumber}
+            onChange={(e) => setCallerNumber(e.target.value)}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm"
+            placeholder="+49 151 12345678"
+          />
+        </div>
+      </div>
+
+      {/* Test button */}
+      <button
+        type="button"
+        onClick={handleTest}
+        disabled={isTesting || !testMessage.trim()}
+        className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 mb-4"
+      >
+        {isTesting ? (
+          <><Loader2 size={16} className="animate-spin" /> KI antwortet...</>
+        ) : (
+          <><Send size={16} /> Test-Anruf senden</>
+        )}
+      </button>
+
+      {/* Result */}
+      {testResult && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle size={16} className="text-green-500" />
+              <span className="text-sm font-medium text-green-700">Antwort erhalten</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {sentimentStyle && (
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${sentimentStyle.bg} ${sentimentStyle.text}`}>
+                  Stimmung: {sentimentStyle.label}
+                </span>
+              )}
+              {durationMs !== null && (
+                <span className="text-xs text-gray-400">{(durationMs / 1000).toFixed(1)}s</span>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-4">
+            <p className="text-xs text-gray-400 mb-1">Anrufer:</p>
+            <p className="text-sm text-gray-600 mb-3 italic">&quot;{testMessage}&quot;</p>
+            <p className="text-xs text-gray-400 mb-1">KI-Assistent:</p>
+            <p className="text-sm text-gray-900 font-medium">&quot;{testResult.response_text}&quot;</p>
+          </div>
+
+          {testResult.audio_available && (
+            <p className="text-xs text-gray-400 flex items-center gap-1">
+              <Phone size={12} /> Audio wurde generiert (TTS)
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Error */}
+      {testError && (
+        <div className="bg-red-50 rounded-lg border border-red-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <XCircle size={16} className="text-red-500" />
+            <span className="text-sm font-medium text-red-700">Test fehlgeschlagen</span>
+            {durationMs !== null && (
+              <span className="text-xs text-gray-400 ml-auto">{(durationMs / 1000).toFixed(1)}s</span>
+            )}
+          </div>
+          <p className="text-sm text-red-600">{testError}</p>
+        </div>
       )}
     </Card>
   )
@@ -492,6 +693,11 @@ export default function VoiceAgentConfigPage() {
             </button>
           </div>
         </Card>
+
+        {/* ── Test Panel ───────────────────────────────────── */}
+        {selectedProvider === 'n8n' && settings.n8n_webhook_url && (
+          <VoiceAgentTestPanel webhookUrl={settings.n8n_webhook_url} />
+        )}
 
         {/* ── Active Toggle + Save ──────────────────────────── */}
         <div className="flex items-center justify-between">
