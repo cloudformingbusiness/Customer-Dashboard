@@ -1,0 +1,308 @@
+{
+  "info": {
+    "name": "FlowTecsMedia API",
+    "_postman_id": "flowtecsm-api-collection",
+    "description": "Alle API-Endpunkte für das FlowTecsMedia Projekt.\n\nVariablen setzen unter: Environments → FlowTecsMedia Local / Production",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health",
+            "description": "Prüft ob der Server läuft"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"Body ist ok\", () => pm.expect(pm.response.text()).to.equal(\"ok\"))",
+                  "pm.test(\"Antwort unter 300ms\", () => pm.expect(pm.response.responseTime).to.be.below(300))"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.collectionVariables.set('authToken', res.token);",
+                  "  pm.environment.set('authToken', res.token);",
+                  "  console.log('✓ Token gespeichert');",
+                  "}",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token vorhanden', () => pm.expect(res.token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@flowtecsm.de\",\n  \"password\": \"passwort123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/logout",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200 oder 204\", () => pm.expect(pm.response.code).to.be.oneOf([200, 204]))"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (aktueller User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('User-Objekt vorhanden', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.data).to.have.property('id');",
+                  "  pm.expect(res.data).to.have.property('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 n8n Workflows",
+      "item": [
+        {
+          "name": "Alle Workflows abrufen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Array zurückgegeben', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/n8n/workflows",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Workflow abrufen",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/n8n/workflows/{{workflowId}}",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"Hat id-Feld\", () => { const b = pm.response.json(); pm.expect(b).to.have.property(\"id\") })"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Workflow aktivieren",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/n8n/workflows/{{workflowId}}/activate",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"active ist true\", () => { const b = pm.response.json(); pm.expect(b.active).to.be.true })"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Workflow deaktivieren",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/n8n/workflows/{{workflowId}}/deactivate",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"active ist false\", () => { const b = pm.response.json(); pm.expect(b.active).to.be.false })"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Workflow-Ausführungen abrufen",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/n8n/workflows/{{workflowId}}/executions?limit=20",
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200))",
+                  "pm.test(\"data ist Array\", () => { const b = pm.response.json(); pm.expect(b.data).to.be.an(\"array\") })"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Webhook auslösen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/n8n/trigger/{{webhookPath}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"value\",\n  \"beispiel\": \"payload\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "mcpServers": {
+    "perplexity": {
+      "command": "npx",
+      "args": ["-y", "@nicholasleelawson/perplexity-mcp"],
+      "env": {
+        "PERPLEXITY_API_KEY": "<DEIN_API_KEY>"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp"]
+    },
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server"],
+      "env": {
+        "SUPABASE_URL": "<DEINE_SUPABASE_URL>",
+        "SUPABASE_SERVICE_ROLE_KEY": "<DEIN_SERVICE_ROLE_KEY>"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-firecrawl"],
+      "env": {
+        "FIRECRAWL_API_KEY": "<DEIN_API_KEY>"
+      }
+    },
+    "n8n-mcp": {
+      "command": "npx",
+      "args": ["-y", "n8n-mcp"]
+    }
+  }
+}

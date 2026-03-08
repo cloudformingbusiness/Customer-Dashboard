@@ -1,0 +1,32 @@
+{
+  "recommendations": [
+    // TypeScript & JavaScript
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+
+    // React & Tailwind
+    "bradlc.vscode-tailwindcss",
+    "dsznajder.es7-react-js-snippets",
+
+    // React Native / Expo
+    "msjsdiag.vscode-react-native",
+
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // Docker
+    "ms-azuretools.vscode-docker",
+
+    // Datenbank
+    "mtxr.sqltools",
+
+    // Allgemein
+    "christian-kohler.path-intellisense",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-german",
+    "usernamehw.errorlens",
+    "PKief.material-icon-theme"
+  ]
+}

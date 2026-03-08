@@ -1,0 +1,109 @@
+version: '3.9'
+
+# ============================================================
+#  FlowTecsMedia – Lokale Entwicklungsumgebung
+#  Usage: docker compose up -d
+#
+#  Datenbank-Option wählen:
+#  Supabase: Profile 'supabase' (default)
+#  MySQL:    Profile 'mysql'
+#
+#  docker compose --profile supabase up -d
+#  docker compose --profile mysql up -d
+# ============================================================
+
+services:
+
+  # ── Web App ───────────────────────────────────────────────
+  webapp:
+    build:
+      context: ./src/frontend/webapp
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_API_URL: http://localhost:3000
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  # ── Website ──────────────────────────────────────────────
+  website:
+    build:
+      context: ./src/frontend/website
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+
+  # ── Backend Server ────────────────────────────────────────
+  server:
+    build:
+      context: ./src/backend/server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - mysql   # ← auf 'supabase_db' ändern wenn Supabase lokal
+    restart: unless-stopped
+    volumes:
+      - ./src/backend/server:/app/src  # Hot Reload in Dev
+
+  # ── n8n ──────────────────────────────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-admin}
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678
+      - DB_TYPE=mysqldb
+      - DB_MYSQLDB_HOST=mysql
+      - DB_MYSQLDB_PORT=3306
+      - DB_MYSQLDB_DATABASE=${MYSQL_DATABASE:-flowtecsm}
+      - DB_MYSQLDB_USER=${MYSQL_USER:-flowtecsm}
+      - DB_MYSQLDB_PASSWORD=${MYSQL_PASSWORD:-secret}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./src/backend/n8n/workflows:/home/node/.n8n/workflows-backup
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    profiles: ["mysql", "full"]
+
+  # ── MySQL Datenbank ───────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootsecret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-flowtecsm}
+      MYSQL_USER: ${MYSQL_USER:-flowtecsm}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secret}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/backend/datenbank/migrations:/docker-entrypoint-initdb.d  # Migrations beim Start
+    restart: unless-stopped
+    profiles: ["mysql", "full"]
+
+  # ── Supabase (lokal via supabase CLI) ─────────────────────
+  # Für lokales Supabase: npx supabase start
+  # Dann VITE_SUPABASE_URL=http://localhost:54321 in .env
+
+volumes:
+  mysql_data:
+  n8n_data:
