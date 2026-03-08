@@ -1,6 +1,6 @@
-# Web App Anleitung – [KUNDENNAME]
+# Dashboard Anleitung – [KUNDENNAME]
 
-**Für:** Alle Nutzer der Web App  
+**Für:** Alle Nutzer des Customer Dashboards  
 **URL:** ✏️ https://app.deine-domain.de  
 **Stand:** ✏️ Datum  
 

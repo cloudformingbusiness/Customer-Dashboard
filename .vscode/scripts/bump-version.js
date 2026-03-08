@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ============================================================
-//  FlowTecsMedia – Version Bump Script
+//  Customer Dashboard – Version Bump Script
 //  Aktualisiert die Version in allen package.json Dateien
 //  und erstellt einen Git-Commit + Tag
 //
@@ -35,9 +35,7 @@ const ROOT = path.resolve(__dirname, '../../')
 
 const PACKAGE_FILES = [
   'package.json',
-  'src/frontend/website/package.json',
   'src/frontend/webapp/package.json',
-  'src/frontend/mobileapp/package.json',
   'src/backend/server/package.json',
 ].map(p => path.join(ROOT, p))
 
@@ -134,7 +132,7 @@ const arg = process.argv[2]
 
 if (!arg) {
   console.log(`
-${bold('FlowTecsMedia – Version Bump')}
+${bold('Customer Dashboard – Version Bump')}
 
 ${gray('Usage:')}
   node .vscode/scripts/bump-version.js ${blue('patch')}    ${gray('→ 1.0.0 → 1.0.1')}
@@ -160,7 +158,7 @@ const newVersion = bumpVersion(currentVersion, arg)
 
 console.log('')
 console.log(blue(bold('╔══════════════════════════════════════════════╗')))
-console.log(blue(bold('║   FlowTecsMedia – Version Bump               ║')))
+console.log(blue(bold('║   Customer Dashboard – Version Bump               ║')))
 console.log(blue(bold('╚══════════════════════════════════════════════╝')))
 
 step(`Version: ${bold(currentVersion)} → ${bold(green(newVersion))}`)

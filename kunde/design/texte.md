@@ -1,6 +1,6 @@
 # Texte & Inhalte – [KUNDENNAME]
 
-Alle Texte die Claude für Website und App verwenden soll.
+Alle Texte die Claude für das Dashboard verwenden soll.
 Eingetragene Texte werden 1:1 verwendet – nichts erfunden.
 Noch nicht eingetragene Felder → Claude schreibt Platzhalter.
 
@@ -8,91 +8,73 @@ Noch nicht eingetragene Felder → Claude schreibt Platzhalter.
 
 ## Allgemein
 
-**Slogan / Tagline:**
-✏️ [z.B. "Automatisierung, die wirkt."]
+**Dashboard-Name:**
+✏️ [z.B. "Muster Dashboard" / "Operations Center"]
 
-**Kurzbeschreibung (1 Satz, für Meta-Description):**
-✏️ [z.B. "Wir helfen KMUs, ihre Prozesse mit n8n zu automatisieren."]
-
-**Über uns (2–4 Sätze):**
-✏️ [Freitext]
+**Kurzbeschreibung (für Login-Seite):**
+✏️ [z.B. "Ihr zentrales Dashboard für Automationen, KPIs und Incidents."]
 
 ---
 
-## Navigation
+## Navigation (Sidebar)
 
 ```
-✏️ Home
-✏️ Leistungen
-✏️ Über uns
-✏️ Referenzen
-✏️ Kontakt
+✏️ Übersicht
+✏️ Automationen
+✏️ Integrationen
+✏️ KPIs
+✏️ Incidents
+✏️ Changes
+✏️ Roadmap
+✏️ Dokumente
+✏️ Kontakte
+✏️ Einstellungen
 ```
 
 ---
 
-## Hero-Sektion (Startseite)
-
-**Überschrift (H1):**
-✏️ [z.B. "Zeit sparen durch smarte Automatisierung"]
-
-**Unterzeile:**
-✏️ [z.B. "Wir bauen Workflows die wirklich funktionieren – für Ihr Team."]
-
-**CTA Button:**
-✏️ [z.B. "Jetzt anfragen"] → Link: /kontakt
-
-**Sekundärer CTA:**
-✏️ [z.B. "Mehr erfahren"] → Link: /leistungen
-
----
-
-## Leistungen
-
-<!-- Pro Leistung: Titel, Icon-Stichwort, Kurzbeschreibung (1-2 Sätze) -->
-
-| # | Titel | Beschreibung |
-|---|---|---|
-| 1 | ✏️ Workflow-Automatisierung | ✏️ |
-| 2 | ✏️ Website & App Entwicklung | ✏️ |
-| 3 | ✏️ Beratung & Konzept | ✏️ |
-| 4 | ✏️ | ✏️ |
-
----
-
-## Über uns
+## Login-Seite
 
 **Überschrift:**
-✏️ [z.B. "Ihr Partner für digitale Transformation"]
+✏️ [z.B. "Willkommen zurück"]
 
-**Text:**
-✏️ [Freitext, 3–5 Sätze]
+**Unterzeile:**
+✏️ [z.B. "Melden Sie sich an, um Ihr Dashboard zu öffnen."]
 
-**Kennzahlen (optional):**
-- ✏️ 50+ zufriedene Kunden
-- ✏️ 5 Jahre Erfahrung
-- ✏️ 200+ umgesetzte Projekte
+**Button-Text:**
+✏️ [z.B. "Anmelden"]
 
 ---
 
-## Kontakt
+## Executive Summary
 
 **Überschrift:**
-✏️ [z.B. "Sprechen wir über Ihr Projekt"]
+✏️ [z.B. "Übersicht"]
 
-**Unterzeile:**
-✏️ [z.B. "Kostenloses Erstgespräch – unverbindlich und auf den Punkt."]
+**Widgets:**
+- ✏️ System-Health (Grün/Gelb/Rot)
+- ✏️ Aktive Automationen
+- ✏️ Offene Incidents
+- ✏️ KPI-Highlights
+- ✏️ Nächste geplante Changes
+
+---
+
+## Kontakt-Formular / Support
+
+**Überschrift:**
+✏️ [z.B. "Support-Anfrage"]
 
 **Formular-Felder:**
-- ✏️ Name (Pflicht)
-- ✏️ E-Mail (Pflicht)
-- ✏️ Telefon (optional)
-- ✏️ Nachricht (Pflicht)
-- ✏️ Button-Text: "Nachricht senden"
+- ✏️ Betreff (Pflicht)
+- ✏️ Kategorie (Dropdown: Bug, Feature, Frage)
+- ✏️ Priorität (Dropdown: Niedrig, Mittel, Hoch, Kritisch)
+- ✏️ Beschreibung (Pflicht)
+- ✏️ Button-Text: "Ticket erstellen"
 
 ---
 
-## Footer
+## Footer / App-Info
 
 **Copyright-Zeile:**
 ✏️ © 2024 [Firmenname]. Alle Rechte vorbehalten.
@@ -100,7 +82,6 @@ Noch nicht eingetragene Felder → Claude schreibt Platzhalter.
 **Footer-Links:**
 - ✏️ Impressum → /impressum
 - ✏️ Datenschutz → /datenschutz
-- ✏️ AGB → /agb (falls vorhanden)
 
 ---
 
@@ -127,22 +108,22 @@ Verantwortlich für den Inhalt: [Name]
 ## Datenschutz-Hinweise
 
 **Eingesetzte Tools (für Datenschutzerklärung):**
-- ✏️ [ ] Google Analytics / Plausible / Matomo
-- ✏️ [ ] Google Fonts (CDN) – Hinweis: DSGVO-Problem, lieber self-hosted
-- ✏️ [ ] Kontaktformular → Speicherung in Supabase
+- ✏️ [ ] Supabase (Datenbank, Auth, Storage)
+- ✏️ [ ] n8n (Automation)
+- ✏️ [ ] Uptime Kuma (Monitoring)
 - ✏️ [ ] Cookies / Session Storage
-- ✏️ [ ] Newsletter (Mailchimp / Brevo / ...)
+- ✏️ [ ] Plausible / Matomo (Analytics)
 
 ---
 
 ## E-Mail Vorlagen (für n8n)
 
-### Kontaktformular-Bestätigung (an Kunde)
-**Betreff:** ✏️ Ihre Anfrage bei [Firmenname]
+### Incident-Benachrichtigung (an Team)
+**Betreff:** ✏️ [Kritisch] Neuer Incident: {title}
 **Text:**
-✏️ [Freitext – wird von n8n versendet]
+✏️ [Freitext – Severity, Beschreibung, Link zum Dashboard]
 
-### Interne Benachrichtigung (an Team)
-**Betreff:** ✏️ Neue Anfrage: {name}
+### Status-Report (wöchentlich)
+**Betreff:** ✏️ Wöchentlicher Status-Report: {date}
 **Text:**
-✏️ [Freitext – Name, E-Mail, Nachricht aus Formular]
+✏️ [Freitext – KPI-Zusammenfassung, offene Incidents, geplante Changes]

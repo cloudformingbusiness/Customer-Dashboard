@@ -1,4 +1,4 @@
-# Contributing – FlowTecsMedia
+# Contributing – Customer Dashboard
 
 ## Workflow
 

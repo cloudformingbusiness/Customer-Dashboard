@@ -1,5 +1,5 @@
 # ============================================================
-#  FlowTecsMedia – Alle npm Dependencies installieren (Windows)
+#  Customer Dashboard – Alle npm Dependencies installieren (Windows)
 #  Usage: powershell -ExecutionPolicy Bypass -File scripts/install-all.ps1
 # ============================================================
 
@@ -10,15 +10,13 @@ function Write-Info { param($msg) Write-Host "  → $msg" -ForegroundColor DarkG
 $Root = Split-Path $PSScriptRoot -Parent
 
 $Packages = @(
-  "src\frontend\website",
   "src\frontend\webapp",
-  "src\frontend\mobileapp",
   "src\backend\server"
 )
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║   FlowTecsMedia – npm install (alle Packages) ║" -ForegroundColor Blue
+Write-Host "║   Customer Dashboard – npm install            ║" -ForegroundColor Blue
 Write-Host "╚══════════════════════════════════════════════╝" -ForegroundColor Blue
 
 Write-Step "Root"

@@ -1,7 +1,7 @@
-# Coolify Deployment – FlowTecsMedia
+# Coolify Deployment – Customer Dashboard
 
 ## Voraussetzungen
-- Hetzner VPS (empfohlen: CX21 oder größer)
+- Hetzner VPS (empfohlen: CX31 oder größer)
 - Coolify auf dem Server installiert: https://coolify.io/docs
 - Domain(s) eingerichtet und auf Server-IP zeigend
 
@@ -19,25 +19,9 @@ Danach Coolify unter `http://DEINE-SERVER-IP:8000` aufrufen und einrichten.
 
 ---
 
-## Website deployen (React + Vite, öffentlich)
+## Dashboard deployen (React + Vite)
 
 1. **Coolify** → New Resource → Application
-2. **Source:** GitHub Repo verbinden
-3. **Build Pack:** Dockerfile
-4. **Dockerfile Location:** `src/frontend/website/Dockerfile`
-5. **Build Args:**
-   ```
-   VITE_API_URL=https://api.deine-domain.de
-   ```
-6. **Port:** 80
-7. **Domain:** `www.deine-domain.de`
-8. Deploy 🚀
-
----
-
-## Webapp deployen (React + Vite, eingeloggt)
-
-1. **Coolify öffnen** → New Resource → Application
 2. **Source:** GitHub Repo verbinden
 3. **Build Pack:** Dockerfile
 4. **Dockerfile Location:** `src/frontend/webapp/Dockerfile`
@@ -49,7 +33,7 @@ Danach Coolify unter `http://DEINE-SERVER-IP:8000` aufrufen und einrichten.
    ```
 6. **Port:** 80
 7. **Domain:** `app.deine-domain.de`
-8. Deploy 🚀
+8. Deploy
 
 ---
 
@@ -63,26 +47,19 @@ Danach Coolify unter `http://DEINE-SERVER-IP:8000` aufrufen und einrichten.
    ```
    NODE_ENV=production
    PORT=3000
-   DB_TYPE=supabase              # oder: mysql
 
    # Supabase
    SUPABASE_URL=https://...supabase.co
    SUPABASE_SERVICE_ROLE_KEY=dein-service-role-key
 
-   # MySQL (falls DB_TYPE=mysql)
-   MYSQL_HOST=deine-mysql-host
-   MYSQL_PORT=3306
-   MYSQL_DATABASE=flowtecsm
-   MYSQL_USER=flowtecsm
-   MYSQL_PASSWORD=sicheres-passwort
-
    # n8n
    N8N_API_URL=https://n8n.deine-domain.de
    N8N_API_KEY=dein-n8n-api-key
    ```
-6. **Port:** 3000
-7. **Domain:** `api.deine-domain.de`
-8. Deploy 🚀
+6. **Persistent Storage:** `kunde/` → `/app/kunde` (read-only, enthält dashboard-config.json)
+7. **Port:** 3000
+8. **Domain:** `api.deine-domain.de`
+9. Deploy
 
 ---
 
@@ -103,28 +80,32 @@ Danach Coolify unter `http://DEINE-SERVER-IP:8000` aufrufen und einrichten.
 4. **Persistent Storage:** `/home/node/.n8n` mounten
 5. **Port:** 5678
 6. **Domain:** `n8n.deine-domain.de`
-7. Deploy 🚀
+7. Deploy
 
 ---
 
-## MySQL deployen (falls kein Supabase)
+## Uptime Kuma deployen (Monitoring)
 
-1. **Coolify** → New Resource → Database → MySQL
-2. Zugangsdaten setzen
-3. Coolify verwaltet Backups automatisch
+1. **Coolify** → New Resource → Application
+2. **Source:** Docker Image: `louislam/uptime-kuma:latest`
+3. **Persistent Storage:** `/app/data` mounten
+4. **Port:** 3001
+5. **Domain:** `monitoring.deine-domain.de`
+6. Deploy
 
 ---
 
 ## Empfohlene Domain-Struktur
 
 ```
-app.deine-domain.de     → Webapp
-api.deine-domain.de     → Backend Server
-n8n.deine-domain.de     → n8n
+app.deine-domain.de         → Dashboard
+api.deine-domain.de         → Backend Server
+n8n.deine-domain.de         → n8n
+monitoring.deine-domain.de  → Uptime Kuma
 ```
 
 ## Health Checks
 
 Coolify kann Health Checks automatisch konfigurieren:
-- Webapp: `GET /health` → 200 ok
-- Server: `GET /health` → 200 ok (im Express-Server implementieren)
+- Dashboard: `GET /` → 200 ok
+- Server: `GET /health` → 200 ok

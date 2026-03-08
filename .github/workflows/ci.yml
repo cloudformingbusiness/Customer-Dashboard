@@ -8,28 +8,9 @@ on:
 
 jobs:
 
-  # ── Website ──────────────────────────────────────────────────
-  website:
-    name: Website (Lint + Test + Build)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/frontend/website
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm', cache-dependency-path: src/frontend/website/package.json }
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run test
-      - run: npm run build
-        env:
-          VITE_API_URL: http://localhost:3000
-
-  # ── Web App ──────────────────────────────────────────────────
+  # ── Dashboard (Web App) ─────────────────────────────────────
   webapp:
-    name: Web App (Lint + Test + Build)
+    name: Dashboard (Lint + Test + Build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -64,21 +45,5 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
         env:
-          DB_TYPE:    supabase
-          NODE_ENV:   test
+          NODE_ENV: test
       - run: npm run build
-  # ── Mobile App ───────────────────────────────────────────────
-  mobileapp:
-    name: Mobile App (Lint + TypeCheck)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/frontend/mobileapp
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm', cache-dependency-path: src/frontend/mobileapp/package.json }
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run test

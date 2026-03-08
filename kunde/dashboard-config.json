@@ -1,0 +1,18 @@
+{
+  "enabledModules": [
+    "executive-summary",
+    "automations",
+    "integrations",
+    "kpis",
+    "incidents",
+    "changes",
+    "roadmap",
+    "docs-sops",
+    "cm"
+  ],
+  "addons": [],
+  "features": {
+    "2fa": false,
+    "sso": false
+  }
+}

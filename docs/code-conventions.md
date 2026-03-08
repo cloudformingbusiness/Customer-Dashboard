@@ -1,4 +1,4 @@
-# Code-Konventionen – FlowTecsMedia
+# Code-Konventionen – Customer Dashboard
 
 ## TypeScript
 - Strict mode in allen Packages
@@ -11,15 +11,15 @@
 - Hooks in `src/hooks/`, wiederverwendbare zuerst
 - State Management: Zustand in `src/stores/`
 
-## React Native (Mobile)
-- NativeWind für Styling (Tailwind-Syntax)
-- Expo Router für Navigation
-- Keine web-spezifischen APIs verwenden
-
-## Design – FlowTecsMedia
+## Design
 - Primär:    `#3b82f6` (blue-500)
 - Sekundär:  `#f97316` (orange-500)
-- Mobile-first bei Web
+- Desktop-first (Dashboard-Anwendung)
+
+## Module
+- Jedes Modul in `src/modules/{name}/` (Frontend) bzw. `src/modules/{name}/` (Backend)
+- Modul-Struktur: index.ts, components/, pages/, hooks/, api/, types.ts
+- Module registrieren sich über die Module-Registry
 
 ## Backend
 - Route-Handler schlank halten, Logik in Services

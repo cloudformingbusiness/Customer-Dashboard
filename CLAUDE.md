@@ -1,8 +1,7 @@
-# [PROJEKTNAME] <!-- ✏️ anpassen -->
+# Customer Dashboard
 
 ## Was & Warum
-<!-- ✏️ 2 Sätze: Was macht dieses Projekt? Für wen? -->
-
+Modulares, kundenspezifisches Dashboard, das alle Automationen, Integrationen, KPIs, Incidents und Roadmap an einem Ort bündelt. Die Grund-App ist wiederverwendbar und wird je Kunde als Instanz konfiguriert.
 
 ## Kunde
 @kunde/KUNDE.md
@@ -10,15 +9,15 @@
 @kunde/design/texte.md
 
 ## Stack
-- Website:    React 18 + Vite + TypeScript (Marketing, SEO, Landing Pages)
-- Web App:    React 18 + Vite + TypeScript (eingeloggter App-Bereich)
-- Mobile:     React Native + Expo + NativeWind
-- Backend:    Express / Hono + TypeScript
-- Datenbank:  Supabase oder MySQL (per DB_TYPE in .env wählen)
+- Dashboard:  React 18 + Vite + TypeScript + Zustand + TanStack Query
+- Backend:    Express + TypeScript
+- Datenbank:  Supabase (Postgres, Auth, Storage, Realtime)
 - Automation: n8n (via REST API + Webhooks)
 - Styling:    Tailwind CSS
-- Testing:    Vitest (Web) + Jest (Mobile)
-- Hosting:    Hetzner VPS + Coolify (Docker)
+- Charts:     Recharts
+- Icons:      Lucide React
+- Testing:    Vitest (Frontend) + Jest (Backend)
+- Hosting:    Hetzner VPS + Coolify (Docker) – pro Kunde eigener Server
 
 ## Deployment
 - Hetzner Setup: @deploy/hetzner/README.md
@@ -27,22 +26,13 @@
 
 ## Commands
 
-### Website
-- `cd src/frontend/website && npm run dev`    – Dev Server (http://localhost:5174)
-- `cd src/frontend/website && npm run build`  – Build
-- `cd src/frontend/website && npm run test`   – Tests
-
-### Web App
+### Dashboard (Web App)
 - `cd src/frontend/webapp && npm run dev`    – Dev Server (http://localhost:5173)
 - `cd src/frontend/webapp && npm run build`  – Build
 - `cd src/frontend/webapp && npm run test`   – Tests
 
-### Mobile
-- `cd src/frontend/mobileapp && npx expo start`  – Dev Server
-- `cd src/frontend/mobileapp && npx expo build`  – Build
-
 ### Backend
-- `cd src/backend/server && npm run dev`     – API Server
+- `cd src/backend/server && npm run dev`     – API Server (http://localhost:3000)
 - `cd src/backend/server && npm run test`    – Tests
 
 ### Root
@@ -52,35 +42,60 @@
 
 ## Struktur
 
-### Frontend – Website (`src/frontend/website/`)
-- `src/components/`  – Wiederverwendbare UI-Komponenten
-- `src/sections/`    – Seiten-Abschnitte (Hero, Features, Pricing...)
-- `src/pages/`       – Einzelne Seiten (Home, About, Kontakt...)
-- `src/hooks/`       – Custom Hooks
-- `src/lib/`         – Utilities, API-Calls
-- `public/`          – robots.txt, sitemap.xml
-
-### Frontend – Web App (`src/frontend/webapp/`)
-- `src/components/`  – Wiederverwendbare Komponenten
-- `src/pages/`       – Seiten / Routen (geschützt)
-- `src/hooks/`       – Custom React Hooks
-- `src/stores/`      – Zustand Stores
-- `src/lib/`         – Utilities & Supabase Client
-
-### Frontend – Mobile (`src/frontend/mobileapp/`)
-- `app/`             – Expo Router Screens
-- `components/`      – Komponenten
-- `hooks/`           – Custom Hooks
-- `lib/`             – Utilities & Supabase Client
-- `assets/`          – Bilder, Fonts
+### Frontend – Dashboard (`src/frontend/webapp/`)
+- `src/modules/`      – **Modulares System** (jedes Modul = eigener Ordner)
+  - `_registry/`      – Modul-Registry (types.ts, index.ts)
+  - `executive-summary/`, `automations/`, `integrations/`, `kpis/`
+  - `incidents/`, `changes/`, `roadmap/`, `docs-sops/`
+  - `cm/`             – Customer & Mitarbeiter Management
+  - `iam/`            – Identity & Access Management
+- `src/components/`   – Wiederverwendbare UI-Komponenten
+  - `layout/`         – AppShell, Sidebar, TopBar, ProtectedRoute
+  - `ui/`             – Card, Badge, Button, DataTable, StatusIndicator
+- `src/pages/`        – Seiten / Routen (geschützt)
+- `src/hooks/`        – Custom React Hooks
+- `src/stores/`       – Zustand Stores (authStore, moduleStore)
+- `src/lib/`          – Utilities & Supabase Client
 
 ### Backend (`src/backend/`)
-- `server/src/routes/`       – API Routen (inkl. `/api/n8n/`)
-- `server/src/middleware/`   – Middleware
-- `server/src/lib/`          – Utilities, Supabase & n8n Client
-- `datenbank/migrations/`    – DB Migrations
-- `datenbank/seeds/`         – DB Seeds
-- `n8n/workflows/`           – Exportierte n8n Workflow-JSONs
+- `server/src/modules/`    – **Backend-Module** (gleiche Struktur wie Frontend)
+  - `_registry/`           – Auto-Mount aller Module-Router
+  - `iam/`, `cm/`, `automations/`, etc.
+- `server/src/middleware/`  – Auth, Error Handler, Request Logger
+- `server/src/lib/`         – Supabase Client, n8n API Client
+- `datenbank/migrations/`   – DB Migrations (Supabase/Postgres)
+- `datenbank/seeds/`        – DB Seeds
+- `n8n/workflows/`          – Exportierte n8n Workflow-JSONs
+
+### Shared (`src/shared/`)
+- `types/index.ts`  – Gemeinsame TypeScript Types für alle Packages
+
+## Kernmodule (MVP)
+1. **Executive Summary** – Health, Nutzen, nächste Steps (aggregiert)
+2. **Automationen** – n8n Workflows (Status, Kritikalität, letzte Änderung)
+3. **Integrationen** – Tools & Auth-Status, Risiken
+4. **KPIs / Metriken** – Definition, Ziel, aktueller Wert, Trends
+5. **Incidents / Tickets** – SLA, Ursache, Lösung
+6. **Changes / Releases** – Changelog, Rollback
+7. **Roadmap / Backlog** – Wert/Aufwand, Timeline
+8. **Docs / SOPs** – Dokumentation, Markdown-Editor
+
+## IAM (Identity & Access Management)
+- Rollen: admin, mitarbeiter, kunde, viewer
+- Permissions: `module:{id}:{read|write|admin}`
+- Audit-Log für alle Änderungen
+- Supabase Auth (JWT)
+
+## CM-System (Customer & Mitarbeiter Management)
+- Zentrale Kontaktverwaltung (Kunden, Mitarbeiter, Partner)
+- Team-Verwaltung
+- Single Source of Truth für alle Module
+
+## Modul-System
+- Jedes Modul ist selbständig: Components, Pages, API, Types
+- Module-Registry steuert Routing, Navigation, Berechtigungen
+- Neue Module als Add-ons ohne Umbau der Basisstruktur
+- Kunden-Config: `kunde/dashboard-config.json`
 
 ## n8n Integration
 - n8n API Client: `src/backend/server/src/lib/n8n.ts`
@@ -88,7 +103,6 @@
 - Workflows exportieren & ablegen: `src/backend/n8n/workflows/`
 - Bei n8n-Aufgaben: MCP-Tools nutzen falls n8n-MCP installiert
 - Webhook auslösen: `POST /api/n8n/trigger/:webhookPath`
-
 
 ## MCP & Skills
 
@@ -120,6 +134,6 @@ Nach jeder Aufgabe `.claude/progress.md` updaten.
 
 ## Projektabschluss
 Am Ende alles in `docs-kunde/` generieren:
-- `handbuch/` – Benutzerhandbuch für alle gebauten Features
+- `handbuch/` – Benutzerhandbuch für das Dashboard
 - `rechtliches/` – Impressum + Datenschutz aus `kunde/KUNDE.md`
-- `screenshots/` – Screenshots der fertigen App/Website ablegen
+- `screenshots/` – Screenshots der fertigen App ablegen

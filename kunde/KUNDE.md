@@ -8,7 +8,7 @@
 
 ---
 
-## 🏢 Unternehmen
+## Unternehmen
 
 | Feld | Wert |
 |---|---|
@@ -24,7 +24,7 @@
 
 ---
 
-## 📍 Adresse & Kontakt
+## Adresse & Kontakt
 
 | Feld | Wert |
 |---|---|
@@ -38,7 +38,7 @@
 
 ---
 
-## 👤 Ansprechpartner
+## Ansprechpartner
 
 ### Hauptansprechpartner (Projektverantwortlicher)
 
@@ -60,24 +60,69 @@
 
 ---
 
-## 🎯 Projektziel
-
-<!-- Was soll das Projekt erreichen? Was ist der Auftrag? -->
+## Projektziel
 
 **Aufgabe:**
-✏️ [z.B. Neue Website + Web App für Kundenverwaltung]
+✏️ [z.B. Customer Dashboard mit Automations-Monitoring + KPI-Tracking]
 
 **Kernziele:**
-- ✏️ [z.B. Mehr Anfragen über die Website generieren]
-- ✏️ [z.B. Interne Prozesse automatisieren via n8n]
-- ✏️ [z.B. Kunden-Login für Dokumentenzugriff]
+- ✏️ [z.B. Alle Automationen und Integrationen zentral überwachen]
+- ✏️ [z.B. KPIs in Echtzeit tracken und Trends visualisieren]
+- ✏️ [z.B. Incidents mit SLA-Tracking managen]
 
 **Zielgruppe der Anwendung:**
-✏️ [z.B. KMU-Kunden im DACH-Raum, 30–55 Jahre, wenig technisch-affin]
+✏️ [z.B. Internes Team + Kunden mit Viewer-Zugang]
 
 ---
 
-## 🎨 Corporate Design
+## Dashboard-Konfiguration
+
+### Aktivierte Module
+
+| Modul | Aktiv | Notizen |
+|---|---|---|
+| Executive Summary | ✏️ ja/nein | |
+| Automationen (n8n) | ✏️ ja/nein | |
+| Integrationen | ✏️ ja/nein | |
+| KPIs / Metriken | ✏️ ja/nein | |
+| Incidents / Tickets | ✏️ ja/nein | |
+| Changes / Releases | ✏️ ja/nein | |
+| Roadmap / Backlog | ✏️ ja/nein | |
+| Docs / SOPs | ✏️ ja/nein | |
+
+### Add-on Module
+
+| Modul | Aktiv | Notizen |
+|---|---|---|
+| Voice Agent | ✏️ ja/nein | ✏️ Kanäle, Integrationen |
+| Kunden-Onboarding | ✏️ ja/nein | |
+| Mitarbeiter-Onboarding | ✏️ ja/nein | |
+
+### Benutzer-Rollen
+
+| Rolle | Anzahl User | Berechtigungen |
+|---|---|---|
+| Admin | ✏️ | Vollzugriff |
+| Mitarbeiter | ✏️ | ✏️ |
+| Kunde (Viewer) | ✏️ | ✏️ Nur Lesen auf bestimmte Module |
+
+---
+
+## Server & Infrastruktur
+
+| Feld | Wert |
+|---|---|
+| **Hetzner Server-Typ** | ✏️ CX21 / CX31 / CX41 |
+| **Server-IP** | ✏️ |
+| **Dashboard-Domain** | ✏️ app.kunde-domain.de |
+| **API-Domain** | ✏️ api.kunde-domain.de |
+| **n8n-Domain** | ✏️ n8n.kunde-domain.de |
+| **Supabase Projekt-URL** | ✏️ |
+| **Coolify URL** | ✏️ |
+
+---
+
+## Corporate Design
 
 > Detaillierte Design-Tokens: `kunde/design/design-tokens.md`
 
@@ -85,47 +130,29 @@
 |---|---|
 | **Primärfarbe** | ✏️ #3b82f6 |
 | **Sekundärfarbe** | ✏️ #f97316 |
-| **Schriftart Überschriften** | ✏️ Inter / Roboto / ... |
-| **Schriftart Fließtext** | ✏️ Inter / Open Sans / ... |
+| **Schriftart** | ✏️ Inter |
 | **Logo (hell)** | `kunde/assets/logos/logo-hell.svg` |
 | **Logo (dunkel)** | `kunde/assets/logos/logo-dunkel.svg` |
-| **Design-Stil** | ✏️ modern & professionell / minimalistisch / bold |
+| **Design-Stil** | ✏️ modern & professionell |
 | **Dark Mode** | ✏️ ja / nein |
 
 ---
 
-## 📝 Texte & Inhalte
-
-> Alle Seitentexte, Überschriften, CTAs: `kunde/design/texte.md`
-
-**Slogan / Tagline:**
-✏️ [z.B. "Automatisierung, die wirkt."]
-
-**Kernbotschaft:**
-✏️ [z.B. "Wir sparen Ihnen Zeit durch intelligente Workflows"]
-
----
-
-## 🔗 Externe Dienste & Zugänge
-
-<!-- Nur Dienste eintragen – KEINE Passwörter hier! Passwörter in .env -->
+## Externe Dienste & Zugänge
 
 | Dienst | Status | Notiz |
 |---|---|---|
-| Domain / Hoster | ✏️ z.B. Strato | ✏️ |
-| E-Mail Provider | ✏️ z.B. Google Workspace | ✏️ |
 | Supabase Projekt | ✏️ Projekt-URL | ✏️ |
 | n8n Instanz | ✏️ URL | ✏️ |
-| Analytics | ✏️ z.B. Plausible / GA4 | ✏️ |
+| Analytics | ✏️ z.B. Plausible | ✏️ |
 | CRM | ✏️ z.B. HubSpot | ✏️ |
+| Helpdesk | ✏️ z.B. Zendesk | ✏️ |
+| Monitoring | ✏️ Uptime Kuma | ✏️ |
 
 ---
 
-## 📋 Besonderheiten & Notizen
+## Besonderheiten & Notizen
 
-<!-- Wichtige Hinweise die Claude beim Entwickeln kennen soll -->
-
-✏️ [z.B. Kunde ist sehr markenkonservativ – keine Design-Experimente]
-✏️ [z.B. Muss DSGVO-konform sein, kein Google Fonts CDN]
-✏️ [z.B. Ältere Zielgruppe – große Schrift, klare Navigation]
-✏️ [z.B. Texte kommen vom Kunden per E-Mail – noch ausstehend]
+✏️ [z.B. Kunde braucht DSGVO-konforme Datenhaltung in DE]
+✏️ [z.B. Bestimmte Module erst in Phase 2]
+✏️ [z.B. SSO-Anbindung geplant für Q3]

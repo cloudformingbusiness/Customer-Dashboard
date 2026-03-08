@@ -2,96 +2,74 @@
   "version": "2.0.0",
   "tasks": [
 
-
     // ═══════════════════════════════════════════════════
-    //  📦 INSTALLATION
+    //  🚀 SCHNELLSTART
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "📦 npm install (alle Packages)",
+      "label": "🚀 Dashboard + Backend starten",
+      "dependsOn": ["Dashboard starten", "Backend starten"],
+      "dependsOrder": "parallel",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+
+    // ═══════════════════════════════════════════════════
+    //  INSTALLATION
+    // ═══════════════════════════════════════════════════
+
+    {
+      "label": "npm install (alle Packages)",
       "type": "shell",
       "command": "bash scripts/install-all.sh",
       "windows": { "command": "powershell -ExecutionPolicy Bypass -File scripts/install-all.ps1" },
       "options": { "cwd": "${workspaceFolder}" },
       "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "📦 Install" },
+      "presentation": { "panel": "shared", "reveal": "always", "tabName": "Install" },
       "problemMatcher": []
     },
 
     // ═══════════════════════════════════════════════════
-    //  🚀 STARTEN
+    //  STARTEN
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "▶ Website starten",
-      "type": "shell",
-      "command": "npm run dev",
-      "options": { "cwd": "${workspaceFolder}/src/frontend/website" },
-      "group": "build",
-      "presentation": { "panel": "new", "reveal": "always", "tabName": "🌐 Website" },
-      "problemMatcher": []
-    },
-    {
-      "label": "▶ Web App starten",
+      "label": "Dashboard starten",
       "type": "shell",
       "command": "npm run dev",
       "options": { "cwd": "${workspaceFolder}/src/frontend/webapp" },
       "group": "build",
-      "presentation": { "panel": "new", "reveal": "always", "tabName": "💻 Web App" },
+      "presentation": { "panel": "new", "reveal": "always", "tabName": "Dashboard" },
       "problemMatcher": []
     },
     {
-      "label": "▶ Mobile App starten",
-      "type": "shell",
-      "command": "npx expo start",
-      "options": { "cwd": "${workspaceFolder}/src/frontend/mobileapp" },
-      "group": "build",
-      "presentation": { "panel": "new", "reveal": "always", "tabName": "📱 Mobile" },
-      "problemMatcher": []
-    },
-    {
-      "label": "▶ Backend starten",
+      "label": "Backend starten",
       "type": "shell",
       "command": "npm run dev",
       "options": { "cwd": "${workspaceFolder}/src/backend/server" },
       "group": "build",
-      "presentation": { "panel": "new", "reveal": "always", "tabName": "⚙️ Backend" },
+      "presentation": { "panel": "new", "reveal": "always", "tabName": "Backend" },
       "problemMatcher": []
     },
     {
-      "label": "▶ n8n starten (Docker)",
+      "label": "n8n starten (Docker)",
       "type": "shell",
-      "command": "docker compose up n8n -d && echo '✓ n8n läuft auf http://localhost:5678'",
+      "command": "docker compose up n8n -d && echo 'n8n laeuft auf http://localhost:5678'",
       "options": { "cwd": "${workspaceFolder}" },
       "group": "build",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "🔄 n8n" },
+      "presentation": { "panel": "shared", "reveal": "always", "tabName": "n8n" },
       "problemMatcher": []
     },
 
     // ── Kombiniert ──────────────────────────────────────
 
     {
-      "label": "▶▶ Frontend komplett (Website + App)",
-      "dependsOn": ["▶ Website starten", "▶ Web App starten"],
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "▶▶ Frontend + Backend",
-      "dependsOn": ["▶ Website starten", "▶ Web App starten", "▶ Backend starten"],
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "▶▶ Alles starten",
+      "label": "Alles starten",
       "dependsOn": [
-        "▶ Website starten",
-        "▶ Web App starten",
-        "▶ Mobile App starten",
-        "▶ Backend starten",
-        "▶ n8n starten (Docker)"
+        "Dashboard starten",
+        "Backend starten",
+        "n8n starten (Docker)"
       ],
       "group": "build",
       "presentation": { "reveal": "always" },
@@ -99,20 +77,11 @@
     },
 
     // ═══════════════════════════════════════════════════
-    //  🏗️ BUILD
+    //  BUILD
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "🏗 Website bauen",
-      "type": "shell",
-      "command": "npm run build",
-      "options": { "cwd": "${workspaceFolder}/src/frontend/website" },
-      "group": "build",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "Build" },
-      "problemMatcher": ["$tsc"]
-    },
-    {
-      "label": "🏗 Web App bauen",
+      "label": "Dashboard bauen",
       "type": "shell",
       "command": "npm run build",
       "options": { "cwd": "${workspaceFolder}/src/frontend/webapp" },
@@ -121,7 +90,7 @@
       "problemMatcher": ["$tsc"]
     },
     {
-      "label": "🏗 Backend bauen",
+      "label": "Backend bauen",
       "type": "shell",
       "command": "npm run build",
       "options": { "cwd": "${workspaceFolder}/src/backend/server" },
@@ -130,27 +99,18 @@
       "problemMatcher": ["$tsc"]
     },
     {
-      "label": "🏗 Alles bauen",
-      "dependsOn": ["🏗 Website bauen", "🏗 Web App bauen", "🏗 Backend bauen"],
+      "label": "Alles bauen",
+      "dependsOn": ["Dashboard bauen", "Backend bauen"],
       "group": "build",
       "problemMatcher": []
     },
 
     // ═══════════════════════════════════════════════════
-    //  🧪 TESTS
+    //  TESTS
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "🧪 Website testen",
-      "type": "shell",
-      "command": "npm run test",
-      "options": { "cwd": "${workspaceFolder}/src/frontend/website" },
-      "group": "test",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "Tests" },
-      "problemMatcher": []
-    },
-    {
-      "label": "🧪 Web App testen",
+      "label": "Dashboard testen",
       "type": "shell",
       "command": "npm run test",
       "options": { "cwd": "${workspaceFolder}/src/frontend/webapp" },
@@ -159,7 +119,7 @@
       "problemMatcher": []
     },
     {
-      "label": "🧪 Backend testen",
+      "label": "Backend testen",
       "type": "shell",
       "command": "npm run test",
       "options": { "cwd": "${workspaceFolder}/src/backend/server" },
@@ -168,20 +128,18 @@
       "problemMatcher": []
     },
     {
-      "label": "🧪 Alle Tests",
-      "dependsOn": ["🧪 Website testen", "🧪 Web App testen", "🧪 Backend testen"],
+      "label": "Alle Tests",
+      "dependsOn": ["Dashboard testen", "Backend testen"],
       "group": { "kind": "test", "isDefault": true },
       "problemMatcher": []
     },
 
     // ═══════════════════════════════════════════════════
-    //  🔢 VERSION BUMPING
-    //  Aktualisiert version in allen package.json Dateien
-    //  und erstellt einen Git-Tag
+    //  VERSION BUMPING
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "🔢 Version: Patch bumpen (1.0.x)",
+      "label": "Version: Patch bumpen (1.0.x)",
       "type": "shell",
       "command": "node .vscode/scripts/bump-version.js patch",
       "options": { "cwd": "${workspaceFolder}" },
@@ -190,7 +148,7 @@
       "problemMatcher": []
     },
     {
-      "label": "🔢 Version: Minor bumpen (1.x.0)",
+      "label": "Version: Minor bumpen (1.x.0)",
       "type": "shell",
       "command": "node .vscode/scripts/bump-version.js minor",
       "options": { "cwd": "${workspaceFolder}" },
@@ -199,7 +157,7 @@
       "problemMatcher": []
     },
     {
-      "label": "🔢 Version: Major bumpen (x.0.0)",
+      "label": "Version: Major bumpen (x.0.0)",
       "type": "shell",
       "command": "node .vscode/scripts/bump-version.js major",
       "options": { "cwd": "${workspaceFolder}" },
@@ -208,16 +166,7 @@
       "problemMatcher": []
     },
     {
-      "label": "🔢 Version: Manuell setzen",
-      "type": "shell",
-      "command": "node .vscode/scripts/bump-version.js ${input:manualVersion}",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "Version" },
-      "problemMatcher": []
-    },
-    {
-      "label": "🔢 Version anzeigen",
+      "label": "Version anzeigen",
       "type": "shell",
       "command": "node .vscode/scripts/bump-version.js current",
       "options": { "cwd": "${workspaceFolder}" },
@@ -226,119 +175,49 @@
       "problemMatcher": []
     },
 
-
     // ═══════════════════════════════════════════════════
-    //  📮 POSTMAN / NEWMAN (API Tests automatisiert)
+    //  POSTMAN / NEWMAN (API Tests)
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "📮 Postman: Collection gegen Local laufen lassen",
+      "label": "Postman: Collection gegen Local laufen lassen",
       "type": "shell",
       "command": "npx newman run postman/FlowTecsMedia.postman_collection.json -e postman/FlowTecsMedia-Local.postman_environment.json --reporters cli,json --reporter-json-export postman/results/last-run.json",
       "options": { "cwd": "${workspaceFolder}" },
       "group": "test",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "📮 Postman" },
-      "problemMatcher": []
-    },
-    {
-      "label": "📮 Postman: Collection gegen Production laufen lassen",
-      "type": "shell",
-      "command": "npx newman run postman/FlowTecsMedia.postman_collection.json -e postman/FlowTecsMedia-Production.postman_environment.json --reporters cli,json --reporter-json-export postman/results/last-run-prod.json",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "test",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "📮 Postman Prod" },
-      "problemMatcher": []
-    },
-
-
-    // ═══════════════════════════════════════════════════
-    //  📡 SFTP DEPLOY
-    // ═══════════════════════════════════════════════════
-
-    {
-      "label": "📡 SFTP: Website deployen (Build + Upload)",
-      "type": "shell",
-      "command": "node deploy/sftp/deploy-website.js",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "📡 SFTP Deploy" },
-      "problemMatcher": []
-    },
-    {
-      "label": "📡 SFTP: Website deployen (nur Upload)",
-      "type": "shell",
-      "command": "node deploy/sftp/deploy-website.js --no-build",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "📡 SFTP Deploy" },
-      "problemMatcher": []
-    },
-    {
-      "label": "📡 SFTP: Dry Run (nur anzeigen)",
-      "type": "shell",
-      "command": "node deploy/sftp/deploy-website.js --dry-run",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "📡 SFTP Dry Run" },
+      "presentation": { "panel": "shared", "reveal": "always", "tabName": "Postman" },
       "problemMatcher": []
     },
 
     // ═══════════════════════════════════════════════════
-    //  🗄 DATENBANK
+    //  DATENBANK (Supabase)
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "🗄 DB: MySQL erstellen",
-      "type": "shell",
-      "command": "mysql -u root -p < src/backend/datenbank/scripts/mysql-create.sql",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "🗄 Datenbank" },
-      "problemMatcher": []
-    },
-    {
-      "label": "🗄 DB: MySQL Testdaten einfügen",
-      "type": "shell",
-      "command": "mysql -u flowtecsm -p flowtecsm < src/backend/datenbank/scripts/mysql-seed.sql",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "🗄 Datenbank" },
-      "problemMatcher": []
-    },
-    {
-      "label": "🗄 DB: MySQL zurücksetzen (⚠️ löscht alle Daten!)",
-      "type": "shell",
-      "command": "mysql -u root -p flowtecsm < src/backend/datenbank/scripts/mysql-drop.sql && mysql -u root -p < src/backend/datenbank/scripts/mysql-create.sql",
-      "options": { "cwd": "${workspaceFolder}" },
-      "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "🗄 Datenbank" },
-      "problemMatcher": []
-    },
-    {
-      "label": "🗄 DB: Supabase Schema pushen",
+      "label": "DB: Supabase Schema pushen",
       "type": "shell",
       "command": "npx supabase db push",
       "options": { "cwd": "${workspaceFolder}" },
       "group": "none",
-      "presentation": { "panel": "shared", "reveal": "always", "tabName": "🗄 Datenbank" },
+      "presentation": { "panel": "shared", "reveal": "always", "tabName": "Datenbank" },
       "problemMatcher": []
     },
     {
-      "label": "🗄 DB: Supabase lokal starten",
+      "label": "DB: Supabase lokal starten",
       "type": "shell",
       "command": "npx supabase start",
       "options": { "cwd": "${workspaceFolder}" },
       "group": "none",
-      "presentation": { "panel": "new", "reveal": "always", "tabName": "🗄 Supabase Local" },
+      "presentation": { "panel": "new", "reveal": "always", "tabName": "Supabase Local" },
       "problemMatcher": []
     },
 
     // ═══════════════════════════════════════════════════
-    //  🐳 DOCKER
+    //  DOCKER
     // ═══════════════════════════════════════════════════
 
     {
-      "label": "🐳 Docker: Alle Services starten",
+      "label": "Docker: Alle Services starten",
       "type": "shell",
       "command": "docker compose up -d",
       "options": { "cwd": "${workspaceFolder}" },
@@ -347,7 +226,7 @@
       "problemMatcher": []
     },
     {
-      "label": "🐳 Docker: Alle Services stoppen",
+      "label": "Docker: Alle Services stoppen",
       "type": "shell",
       "command": "docker compose down",
       "options": { "cwd": "${workspaceFolder}" },
@@ -356,7 +235,7 @@
       "problemMatcher": []
     },
     {
-      "label": "🐳 Docker: Logs anzeigen",
+      "label": "Docker: Logs anzeigen",
       "type": "shell",
       "command": "docker compose logs -f",
       "options": { "cwd": "${workspaceFolder}" },
@@ -367,7 +246,6 @@
 
   ],
 
-  // ── Inputs für manuelle Versionseingabe ──────────────
   "inputs": [
     {
       "id": "manualVersion",

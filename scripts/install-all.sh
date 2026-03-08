@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#  FlowTecsMedia – Alle npm Dependencies installieren
+#  Customer Dashboard – Alle npm Dependencies installieren
 #  Usage: bash scripts/install-all.sh
 # ============================================================
 
@@ -12,18 +12,16 @@ step() { echo -e "\n${BLUE}${BOLD}▶ $1${NC}"; }
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 PACKAGES=(
-  "src/frontend/website"
   "src/frontend/webapp"
-  "src/frontend/mobileapp"
   "src/backend/server"
 )
 
 echo ""
 echo -e "${BLUE}${BOLD}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}${BOLD}║   FlowTecsMedia – npm install (alle Packages) ║${NC}"
+echo -e "${BLUE}${BOLD}║   Customer Dashboard – npm install            ║${NC}"
 echo -e "${BLUE}${BOLD}╚══════════════════════════════════════════════╝${NC}"
 
-# Root Dependencies (sftp, dotenv)
+# Root Dependencies
 step "Root"
 npm install --prefix "$ROOT" --silent && ok "root" || info "root – übersprungen"
 

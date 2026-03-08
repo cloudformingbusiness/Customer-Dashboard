@@ -1,110 +1,115 @@
-# [PROJEKTNAME]
+# Customer Dashboard
 
-> <!-- ✏️ Kurzbeschreibung – Was macht dieses Projekt? Für wen? -->
+> Modulares, kundenspezifisches Dashboard – bündelt Automationen, Integrationen, KPIs, Incidents und Roadmap an einem Ort. Pro Kunde als eigene Instanz konfigurierbar.
 
 ---
 
 ## Quick Start
 
-**Mac / Linux:**
 ```bash
-git clone git@github.com:DEIN-USER/DEIN-REPO.git mein-projekt
-cd mein-projekt
-bash setup.sh
-```
+# 1. Repository klonen
+git clone git@github.com:DEIN-USER/customer-dashboard.git
+cd customer-dashboard
 
-**Windows (PowerShell):**
-```powershell
-git clone git@github.com:DEIN-USER/DEIN-REPO.git mein-projekt
-cd mein-projekt
-powershell -ExecutionPolicy Bypass -File setup.ps1
-```
-
-Das Setup-Script fragt nach Projektname, gewünschten Modulen (Website / Web App / Mobile / Backend) und Datenbank. Alles Unnötige wird automatisch entfernt. Danach:
-
-```bash
-# 1. .env öffnen und Keys eintragen
 # 2. Dependencies installieren
 bash scripts/install-all.sh          # Mac/Linux
 # powershell -File scripts/install-all.ps1  # Windows
 
-# 3. Claude Code starten
-claude
-# → Inhalt aus .claude/starter-prompt.md einfügen
+# 3. .env konfigurieren
+cp .env.example .env
+# → Supabase URL + Keys eintragen
+
+# 4. Entwicklung starten
+cd src/frontend/webapp && npm run dev   # → http://localhost:5173
+cd src/backend/server && npm run dev    # → http://localhost:3000
 ```
 
 ---
 
 ## Stack
 
-| Bereich | Technologie |
-|---|---|
-| Website | React 18 + Vite + TypeScript + Tailwind |
-| Web App | React 18 + Vite + TypeScript + Tailwind + Zustand |
-| Mobile | React Native + Expo + NativeWind |
-| Backend | Express + TypeScript |
-| Datenbank | Supabase **oder** MySQL |
-| Automation | n8n (Webhooks + API) |
-| Hosting | Hetzner VPS + Coolify |
+| Bereich    | Technologie                                               |
+| ---------- | --------------------------------------------------------- |
+| Dashboard  | React 18 + Vite + TypeScript + Zustand + TanStack Query   |
+| Backend    | Express + TypeScript                                      |
+| Datenbank  | Supabase (Postgres, Auth, Storage, Realtime)              |
+| Automation | n8n (Webhooks + API)                                      |
+| Styling    | Tailwind CSS                                              |
+| Charts     | Recharts                                                  |
+| Monitoring | Uptime Kuma                                               |
+| Hosting    | Hetzner VPS + Coolify (Docker) – pro Kunde eigener Server |
 
 ---
 
-## Entwicklung starten
+## Kernmodule (MVP)
+
+| Modul               | Beschreibung                                              |
+| ------------------- | --------------------------------------------------------- |
+| Executive Summary   | Health-Status, Nutzen, nächste Steps                      |
+| Automationen        | n8n Workflows – Status, Kritikalität, Execution-History   |
+| Integrationen       | Tools & Auth-Status, Risiken                              |
+| KPIs / Metriken     | Definition, Ziel, aktueller Wert, Trends                  |
+| Incidents / Tickets | SLA, Ursache, Lösung                                      |
+| Changes / Releases  | Changelog, Rollback                                       |
+| Roadmap / Backlog   | Wert/Aufwand-Matrix, Timeline                             |
+| Docs / SOPs         | Dokumentation, Markdown-Editor                            |
+| CM-System           | Kunden- & Mitarbeiter-Management (Single Source of Truth) |
+| IAM                 | Rollen, Permissions, Audit-Log                            |
+
+### Add-on Module (erweiterbar)
+
+- Voice Agent (Kundenservice / Sales / Support)
+- Onboarding-Formulare für Kunden
+- Onboarding-Formulare für Mitarbeitende
+
+---
+
+## Entwicklung
 
 ```bash
-# Alle Services via Docker (empfohlen)
+# Alle Services via Docker
 docker compose up -d
 
-# Oder einzeln (nach npm install):
-cd src/frontend/website  && npm run dev   # → http://localhost:5174
-cd src/frontend/webapp   && npm run dev   # → http://localhost:5173
-cd src/frontend/mobileapp && npx expo start
-cd src/backend/server    && npm run dev   # → http://localhost:3000
+# Oder einzeln:
+cd src/frontend/webapp && npm run dev    # Dashboard → http://localhost:5173
+cd src/backend/server && npm run dev     # API       → http://localhost:3000
 ```
 
-Oder via **VSCode**: `Strg+Shift+B` → Task auswählen
+Via **VSCode**: `Strg+Shift+B` → Task auswählen
 
 ---
 
 ## Claude Code Slash Commands
 
-| Command | Was es tut |
-|---|---|
-| `/project:new-component Name` | Neue Komponente (Website / Webapp / Mobile) |
-| `/project:new-api-route name` | Neue API-Route mit Tests |
-| `/project:new-migration name` | Neue DB-Migration |
-| `/project:new-n8n-workflow name` | Neuer n8n Workflow |
-| `/project:review` | Code Review vor PR |
-| `/project:deploy` | Deploy-Checkliste |
-| `/project:projektabschluss` | Kunden-Dokumentation generieren |
-| `/project:migration` | Bestehendes Projekt migrieren |
-
-**Session starten (täglich):**
-```
-"Lies .claude/progress.md – wo waren wir und was sind die nächsten Schritte?"
-```
+| Command                          | Was es tut                      |
+| -------------------------------- | ------------------------------- |
+| `/project:new-component Name`    | Neue Dashboard-Komponente       |
+| `/project:new-api-route name`    | Neue API-Route mit Tests        |
+| `/project:new-migration name`    | Neue DB-Migration               |
+| `/project:new-n8n-workflow name` | Neuer n8n Workflow              |
+| `/project:review`                | Code Review vor PR              |
+| `/project:deploy`                | Deploy-Checkliste               |
+| `/project:projektabschluss`      | Kunden-Dokumentation generieren |
 
 ---
 
-## Deployment
+## Deployment (pro Kunde)
 
 ```
-www.deine-domain.de   → Website  (SFTP oder Coolify)
-app.deine-domain.de   → Web App  (Coolify)
-api.deine-domain.de   → Backend  (Coolify)
-n8n.deine-domain.de   → n8n      (Coolify)
+app.kunde-domain.de   → Dashboard  (Coolify)
+api.kunde-domain.de   → Backend    (Coolify)
+n8n.kunde-domain.de   → n8n        (Coolify)
 ```
 
 - Hetzner Setup: `deploy/hetzner/README.md`
 - Coolify Setup: `deploy/coolify/README.md`
-- SFTP Deploy:   `deploy/sftp/README.md`
 
 ---
 
 ## Docs
 
-- `docs/architecture.md` – Systemübersicht
-- `docs/code-conventions.md` – FlowTecsMedia Standards
+- `docs/architecture.md` – Modul-Architektur & Datenfluss
+- `docs/code-conventions.md` – Code Standards
 - `docs/workflows.md` – Entwicklungs-Workflows
 - `docs/MCP.md` – Claude Code MCP Setup (n8n, Supabase)
 - `CONTRIBUTING.md` – Branch & Commit Konventionen

@@ -3,61 +3,24 @@ name: Deploy
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # Manuell auslösbar im GitHub UI
+  workflow_dispatch:
 
 jobs:
 
-  # ── Website via SFTP ─────────────────────────────────────────
-  deploy-website:
-    name: Website → SFTP
+  # ── Dashboard + Backend via Coolify Webhook ──────────────────
+  deploy:
+    name: Deploy → Coolify
     runs-on: ubuntu-latest
     environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm', cache-dependency-path: src/frontend/website/package-lock.json }
-
-      - name: Dependencies installieren
-        run: npm ci
-        working-directory: src/frontend/website
-
-      - name: Website bauen
-        run: npm run build
-        working-directory: src/frontend/website
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      - name: Via SFTP deployen
-        run: node deploy/sftp/deploy-website.js --no-build
-        env:
-          SFTP_HOST:       ${{ secrets.SFTP_HOST }}
-          SFTP_PORT:       ${{ secrets.SFTP_PORT }}
-          SFTP_USER:       ${{ secrets.SFTP_USER }}
-          SFTP_PASSWORD:   ${{ secrets.SFTP_PASSWORD }}
-          SFTP_REMOTE_DIR: ${{ secrets.SFTP_REMOTE_DIR }}
-          WEBSITE_URL:     ${{ secrets.WEBSITE_URL }}
-
-  # ── Backend via Coolify Webhook ───────────────────────────────
-  deploy-backend:
-    name: Backend → Coolify
-    runs-on: ubuntu-latest
-    environment: production
-    needs: deploy-website   # Website zuerst deployen
     steps:
       - name: Coolify Deploy-Webhook auslösen
         run: |
           curl -s -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
-            --fail || echo "⚠️ Coolify Webhook fehlgeschlagen"
-        # Webhook URL: Coolify → Deine App → Settings → Deploy Webhook
+            --fail || echo "Coolify Webhook fehlgeschlagen"
 
 # ── Secrets die in GitHub gesetzt werden müssen ──────────────
 # Repository → Settings → Secrets and variables → Actions
-#
-# SFTP:
-#   SFTP_HOST, SFTP_PORT, SFTP_USER, SFTP_PASSWORD
-#   SFTP_REMOTE_DIR, WEBSITE_URL
 #
 # Vite Build:
 #   VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
