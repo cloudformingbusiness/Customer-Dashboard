@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+.expo/
+.next/
+
+# Environment – NIEMALS committen!
+.env
+.env.local
+.env.*.local
+
+# Claude Code – persönliche Einstellungen nicht committen
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Docker
+docker-compose.override.yml
+
+# Postman Test-Ergebnisse
+postman/results/*.json
+
+# Build-Outputs
+.expo-shared/
+
+# Logs
+
+# Test Coverage
+coverage/
+lcov-report/
+
+# Betriebssystem
+
+# IDE
+*.suo
+*.user
+
+# Docker lokale Overrides
+
+# Lokale Env

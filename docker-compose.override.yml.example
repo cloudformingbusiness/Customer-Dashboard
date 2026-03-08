@@ -1,0 +1,31 @@
+# ============================================================
+#  docker-compose.override.yml – Lokale Anpassungen
+#
+#  Kopieren: cp docker-compose.override.yml.example docker-compose.override.yml
+#  Diese Datei ist in .gitignore – eigene Anpassungen bleiben lokal
+#
+#  Wird automatisch von docker compose berücksichtigt
+# ============================================================
+
+version: '3.9'
+
+services:
+
+  # ── Beispiel: Backend mit Hot Reload ─────────────────────────
+  server:
+    volumes:
+      - ./src/backend/server/src:/app/src
+    environment:
+      NODE_ENV: development
+
+  # ── Beispiel: Anderen Port für lokale Website ─────────────────
+  # website:
+  #   ports:
+  #     - "3001:80"
+
+  # ── Beispiel: Adminer für MySQL Verwaltung ────────────────────
+  # adminer:
+  #   image: adminer
+  #   ports:
+  #     - "8080:8080"
+  #   profiles: ["mysql"]

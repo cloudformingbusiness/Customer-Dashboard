@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+
+  # ── Website ──────────────────────────────────────────────────
+  website:
+    name: Website (Lint + Test + Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/frontend/website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm', cache-dependency-path: src/frontend/website/package.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+        env:
+          VITE_API_URL: http://localhost:3000
+
+  # ── Web App ──────────────────────────────────────────────────
+  webapp:
+    name: Web App (Lint + Test + Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/frontend/webapp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm', cache-dependency-path: src/frontend/webapp/package.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL:     ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL:          http://localhost:3000
+
+  # ── Backend ──────────────────────────────────────────────────
+  backend:
+    name: Backend (Lint + Test + Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/backend/server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm', cache-dependency-path: src/backend/server/package.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+        env:
+          DB_TYPE:    supabase
+          NODE_ENV:   test
+      - run: npm run build
+  # ── Mobile App ───────────────────────────────────────────────
+  mobileapp:
+    name: Mobile App (Lint + TypeCheck)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/frontend/mobileapp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm', cache-dependency-path: src/frontend/mobileapp/package.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test

@@ -1,0 +1,6 @@
+<!-- ✏️ Logo-Datei hier ersetzen (SVG bevorzugt) -->
+<!-- Vom Kunden .ai/.eps/.pdf erhalten → in SVG konvertieren -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <rect width="200" height="60" rx="8" fill="#f3f4f6"/>
+  <text x="100" y="35" font-family="sans-serif" font-size="14" fill="#9ca3af" text-anchor="middle">Logo hier einfügen</text>
+</svg>
