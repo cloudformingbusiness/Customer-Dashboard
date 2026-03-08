@@ -1,1 +1,3 @@
 admin@test.de / Test1234!
+
+curl -X POST https://n8ndeploy.cloudforming.de/webhook/voice-agent-call -H "Content-Type: application/json" -d '{"text": "Hallo, ich wollte fragen wann meine Bestellung kommt", "caller_number": "+49 151 12345678","callee_number": "+49 89 12345678"}'

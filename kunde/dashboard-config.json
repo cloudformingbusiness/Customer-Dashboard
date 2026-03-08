@@ -10,7 +10,7 @@
     "docs-sops",
     "cm"
   ],
-  "addons": [],
+  "addons": ["voice-agent", "customer-onboarding", "employee-onboarding"],
   "features": {
     "2fa": true,
     "sso": true

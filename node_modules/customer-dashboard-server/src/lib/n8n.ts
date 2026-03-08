@@ -6,7 +6,7 @@
  * API Key: n8n Settings → API → Create API Key
  */
 
-const N8N_BASE_URL = process.env.N8N_API_URL!
+const N8N_BASE_URL = (process.env.N8N_API_URL || '').replace(/\/+$/, '')
 const N8N_API_KEY  = process.env.N8N_API_KEY!
 
 if (!N8N_BASE_URL || !N8N_API_KEY) {

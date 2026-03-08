@@ -108,3 +108,34 @@ export const useVoiceAgentConfig = () =>
   useApiQuery<Record<string, unknown>>(['voice-agent', 'config'], '/api/voice-agent/config')
 export const useVoiceAgentConfigMutation = () =>
   useApiMutation<Record<string, unknown>>('/api/voice-agent/config', 'PUT', [['voice-agent', 'config']])
+
+// Voice Agent – n8n Workflow Status
+export interface IN8nWorkflowStatus {
+  workflow: { id: string; name: string; active: boolean; updatedAt: string }
+  recentExecutions: { id: string; status: string; startedAt: string; stoppedAt?: string }[]
+  n8nUrl: string
+}
+export const useVoiceAgentN8nStatus = (workflowId: string) => {
+  return useQuery({
+    queryKey: ['voice-agent', 'n8n', workflowId],
+    queryFn: () =>
+      apiFetch<IApiResponse<IN8nWorkflowStatus>>(`/api/voice-agent/n8n/status/${workflowId}`, {}).then((r) => r.data),
+    enabled: !!workflowId,
+    retry: 1,
+    staleTime: 30_000,
+  })
+}
+export const useVoiceAgentN8nActivate = (workflowId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => apiFetch<IApiResponse<void>>(`/api/voice-agent/n8n/activate/${workflowId}`, { method: 'POST' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['voice-agent', 'n8n', workflowId] }),
+  })
+}
+export const useVoiceAgentN8nDeactivate = (workflowId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => apiFetch<IApiResponse<void>>(`/api/voice-agent/n8n/deactivate/${workflowId}`, { method: 'POST' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['voice-agent', 'n8n', workflowId] }),
+  })
+}

@@ -17,7 +17,7 @@ export default function App() {
 
   // Module basierend auf Config + User-Permissions laden
   const { routes, navItems } = useMemo(() => {
-    const enabledModules = config?.enabledModules ?? []
+    const enabledModules = [...(config?.enabledModules ?? []), ...(config?.addons ?? [])]
     const modules = getModules(enabledModules, permissions)
     return {
       routes: getModuleRoutes(modules),
