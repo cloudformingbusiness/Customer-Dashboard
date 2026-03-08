@@ -15,7 +15,7 @@ export const roadmapModule: IModule = {
     { path: '/roadmap', element: RoadmapPage },
   ],
   navItems: [
-    { label: 'Roadmap', path: '/roadmap', icon: 'Map' },
+    { label: 'Roadmap', path: '/roadmap', icon: 'Map', group: 'planning' },
   ],
   apiPrefix: '/api/roadmap',
 }

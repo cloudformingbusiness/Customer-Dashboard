@@ -15,7 +15,7 @@ export const customerOnboardingModule: IModule = {
     { path: '/customer-onboarding', element: CustomerOnboardingPage },
   ],
   navItems: [
-    { label: 'Kunden-Onboarding', path: '/customer-onboarding', icon: 'UserPlus' },
+    { label: 'Kunden-Onboarding', path: '/customer-onboarding', icon: 'UserPlus', group: 'addons' },
   ],
   apiPrefix: '/api/customer-onboarding',
 }

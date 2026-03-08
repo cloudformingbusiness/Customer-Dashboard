@@ -1,5 +1,7 @@
 import { useIncidents, useKpis, useChanges, useAutomations } from '../../../hooks/useApi'
 import { AlertTriangle, BarChart3, GitBranch, Workflow } from 'lucide-react'
+import { Card, Badge, variantFor } from '../../../components/ui'
+import { INCIDENT_STATUS_VARIANT, CHANGE_STATUS_VARIANT } from '../../../lib/status-colors'
 
 function StatCard({ title, value, icon: Icon, color }: {
   title: string
@@ -8,7 +10,7 @@ function StatCard({ title, value, icon: Icon, color }: {
   color: string
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+    <Card className="p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">{title}</p>
@@ -18,7 +20,7 @@ function StatCard({ title, value, icon: Icon, color }: {
           <Icon size={24} className="text-white" />
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -38,7 +40,6 @@ export default function ExecutiveSummaryPage() {
         <p className="text-gray-500 mt-1">Willkommen im Customer Dashboard</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Offene Incidents"
@@ -46,30 +47,13 @@ export default function ExecutiveSummaryPage() {
           icon={AlertTriangle}
           color={openIncidents > 0 ? 'bg-red-500' : 'bg-green-500'}
         />
-        <StatCard
-          title="KPIs"
-          value={kpis?.length ?? 0}
-          icon={BarChart3}
-          color="bg-blue-500"
-        />
-        <StatCard
-          title="Automationen"
-          value={activeAutomations}
-          icon={Workflow}
-          color="bg-purple-500"
-        />
-        <StatCard
-          title="Letzte Changes"
-          value={changes?.length ?? 0}
-          icon={GitBranch}
-          color="bg-orange-500"
-        />
+        <StatCard title="KPIs" value={kpis?.length ?? 0} icon={BarChart3} color="bg-blue-500" />
+        <StatCard title="Automationen" value={activeAutomations} icon={Workflow} color="bg-purple-500" />
+        <StatCard title="Letzte Changes" value={changes?.length ?? 0} icon={GitBranch} color="bg-orange-500" />
       </div>
 
-      {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Incidents */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <Card className="p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Aktuelle Incidents</h2>
           {incidents && incidents.length > 0 ? (
             <div className="space-y-3">
@@ -79,23 +63,18 @@ export default function ExecutiveSummaryPage() {
                     <p className="text-sm font-medium text-gray-900">{incident.title as string}</p>
                     <p className="text-xs text-gray-500">{incident.severity as string}</p>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    incident.status === 'open' ? 'bg-red-100 text-red-700' :
-                    incident.status === 'investigating' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-green-100 text-green-700'
-                  }`}>
+                  <Badge variant={variantFor(incident.status as string, INCIDENT_STATUS_VARIANT)}>
                     {incident.status as string}
-                  </span>
+                  </Badge>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm text-gray-400">Keine Incidents vorhanden</p>
           )}
-        </div>
+        </Card>
 
-        {/* Recent Changes */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <Card className="p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Letzte Changes</h2>
           {changes && changes.length > 0 ? (
             <div className="space-y-3">
@@ -105,20 +84,16 @@ export default function ExecutiveSummaryPage() {
                     <p className="text-sm font-medium text-gray-900">{change.title as string}</p>
                     <p className="text-xs text-gray-500">{change.type as string} {change.version ? `v${change.version}` : ''}</p>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    change.status === 'deployed' ? 'bg-green-100 text-green-700' :
-                    change.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                  <Badge variant={variantFor(change.status as string, CHANGE_STATUS_VARIANT)}>
                     {change.status as string}
-                  </span>
+                  </Badge>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm text-gray-400">Keine Changes vorhanden</p>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   )

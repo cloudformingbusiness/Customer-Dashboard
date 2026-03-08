@@ -1,5 +1,6 @@
 import { useKpis } from '../../../hooks/useApi'
-import { TrendingUp, TrendingDown, Minus, Plus, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, BarChart3 } from 'lucide-react'
+import { PageHeader, Spinner, EmptyState, Card } from '../../../components/ui'
 
 const TREND_ICON: Record<string, React.ReactNode> = {
   up: <TrendingUp size={18} className="text-green-500" />,
@@ -12,22 +13,9 @@ export default function KpisPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">KPIs</h1>
-          <p className="text-gray-500 mt-1">Kennzahlen und Zielverfolgung</p>
-        </div>
-        <button className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-lg font-medium hover:bg-primary-dark transition-colors">
-          <Plus size={18} />
-          Neuer KPI
-        </button>
-      </div>
+      <PageHeader title="KPIs" subtitle="Kennzahlen und Zielverfolgung" action={{ label: 'Neuer KPI' }} />
 
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
-        </div>
-      ) : kpis && kpis.length > 0 ? (
+      {isLoading ? <Spinner /> : kpis && kpis.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {kpis.map((kpi) => {
             const current = kpi.current_value as number | undefined
@@ -39,10 +27,7 @@ export default function KpisPage() {
               : null
 
             return (
-              <div
-                key={kpi.id as string}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-              >
+              <Card key={kpi.id as string} hover className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <h3 className="text-sm font-medium text-gray-500 truncate pr-2">
                     {kpi.name as string}
@@ -73,16 +58,12 @@ export default function KpisPage() {
                     />
                   </div>
                 )}
-              </div>
+              </Card>
             )
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-          <BarChart3 size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">Keine KPIs</h3>
-          <p className="text-gray-500 mt-1">Es wurden noch keine KPIs angelegt.</p>
-        </div>
+        <EmptyState icon={BarChart3} title="Keine KPIs" description="Es wurden noch keine KPIs angelegt." />
       )}
     </div>
   )

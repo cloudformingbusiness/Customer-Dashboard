@@ -15,7 +15,7 @@ export const incidentsModule: IModule = {
     { path: '/incidents', element: IncidentsPage },
   ],
   navItems: [
-    { label: 'Incidents', path: '/incidents', icon: 'AlertTriangle' },
+    { label: 'Incidents', path: '/incidents', icon: 'AlertTriangle', group: 'operations' },
   ],
   apiPrefix: '/api/incidents',
 }

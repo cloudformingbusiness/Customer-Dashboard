@@ -15,7 +15,7 @@ export const integrationsModule: IModule = {
     { path: '/integrations', element: IntegrationsPage },
   ],
   navItems: [
-    { label: 'Integrationen', path: '/integrations', icon: 'Plug' },
+    { label: 'Integrationen', path: '/integrations', icon: 'Plug', group: 'operations' },
   ],
   apiPrefix: '/api/integrations',
 }

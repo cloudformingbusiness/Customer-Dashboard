@@ -15,7 +15,7 @@ export const executiveSummaryModule: IModule = {
     { path: '/dashboard', element: ExecutiveSummaryPage },
   ],
   navItems: [
-    { label: 'Übersicht', path: '/dashboard', icon: 'LayoutDashboard' },
+    { label: 'Übersicht', path: '/dashboard', icon: 'LayoutDashboard', group: 'main' },
   ],
   apiPrefix: '/api/executive-summary',
 }

@@ -88,3 +88,23 @@ export const useAutomations = () => useApiQuery<Record<string, unknown>[]>(['aut
 // IAM
 export const useRoles = () => useApiQuery<Record<string, unknown>[]>(['roles'], '/api/iam/roles')
 export const usePermissions = () => useApiQuery<Record<string, unknown>[]>(['permissions'], '/api/iam/permissions')
+
+// Voice Agent
+export interface IVoiceAgentStats {
+  totalCalls: number
+  completedCalls: number
+  missedCalls: number
+  avgDurationSeconds: number
+  reachabilityPercent: number
+  sentiment: { positive: number; neutral: number; negative: number }
+  callsToday: number
+  callsThisWeek: number
+}
+
+export const useVoiceAgentStats = () => useApiQuery<IVoiceAgentStats>(['voice-agent', 'stats'], '/api/voice-agent/stats')
+export const useVoiceAgentCalls = (limit = 50) =>
+  useApiQuery<Record<string, unknown>[]>(['voice-agent', 'calls'], `/api/voice-agent/calls?limit=${limit}`)
+export const useVoiceAgentConfig = () =>
+  useApiQuery<Record<string, unknown>>(['voice-agent', 'config'], '/api/voice-agent/config')
+export const useVoiceAgentConfigMutation = () =>
+  useApiMutation<Record<string, unknown>>('/api/voice-agent/config', 'PUT', [['voice-agent', 'config']])

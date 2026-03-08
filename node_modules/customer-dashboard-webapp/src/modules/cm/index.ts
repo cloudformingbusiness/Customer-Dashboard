@@ -15,7 +15,7 @@ export const cmModule: IModule = {
     { path: '/contacts', element: CmPage },
   ],
   navItems: [
-    { label: 'Kontakte', path: '/contacts', icon: 'Users' },
+    { label: 'Kontakte', path: '/contacts', icon: 'Users', group: 'admin' },
   ],
   apiPrefix: '/api/cm',
 }

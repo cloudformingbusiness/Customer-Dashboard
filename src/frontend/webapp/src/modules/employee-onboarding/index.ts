@@ -15,7 +15,7 @@ export const employeeOnboardingModule: IModule = {
     { path: '/employee-onboarding', element: EmployeeOnboardingPage },
   ],
   navItems: [
-    { label: 'Mitarbeiter-Onboarding', path: '/employee-onboarding', icon: 'UserCheck' },
+    { label: 'Mitarbeiter-Onboarding', path: '/employee-onboarding', icon: 'UserCheck', group: 'addons' },
   ],
   apiPrefix: '/api/employee-onboarding',
 }

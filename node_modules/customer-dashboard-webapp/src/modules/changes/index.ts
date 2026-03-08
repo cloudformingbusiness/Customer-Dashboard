@@ -15,7 +15,7 @@ export const changesModule: IModule = {
     { path: '/changes', element: ChangesPage },
   ],
   navItems: [
-    { label: 'Changes', path: '/changes', icon: 'GitBranch' },
+    { label: 'Changes', path: '/changes', icon: 'GitBranch', group: 'operations' },
   ],
   apiPrefix: '/api/changes',
 }

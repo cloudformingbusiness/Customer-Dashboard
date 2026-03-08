@@ -1,115 +1,220 @@
-import { useState, useEffect } from 'react'
-import { Phone, TrendingUp, TrendingDown, Minus, Clock, Users, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, Users, Percent, Settings } from 'lucide-react'
+import { PageHeader, Spinner, EmptyState, Card, Badge, variantFor, DataTable } from '../../../components/ui'
+import type { IColumn } from '../../../components/ui'
+import type { BadgeVariant } from '../../../components/ui'
+import { useVoiceAgentStats, useVoiceAgentCalls } from '../../../hooks/useApi'
 
-interface IVoiceAgentStat {
-  id: string
-  label: string
-  value: string
-  unit: string
-  trend: 'up' | 'down' | 'stable'
-  icon: React.ReactNode
+// ── Color maps ───────────────────────────────────────────────
+
+const CALL_STATUS_VARIANT: Record<string, BadgeVariant> = {
+  completed: 'green',
+  in_progress: 'blue',
+  ringing: 'yellow',
+  missed: 'red',
+  failed: 'red',
+  voicemail: 'purple',
 }
 
-const TREND_ICON: Record<string, React.ReactNode> = {
-  up: <TrendingUp size={18} className="text-green-500" />,
-  down: <TrendingDown size={18} className="text-red-500" />,
-  stable: <Minus size={18} className="text-gray-400" />,
+const SENTIMENT_VARIANT: Record<string, BadgeVariant> = {
+  positive: 'green',
+  neutral: 'gray',
+  negative: 'red',
 }
+
+const DIRECTION_ICON: Record<string, React.ReactNode> = {
+  inbound: <PhoneIncoming size={16} className="text-blue-500" />,
+  outbound: <PhoneOutgoing size={16} className="text-orange-500" />,
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+function formatPhone(num?: string): string {
+  if (!num) return '–'
+  return num
+}
+
+// ── Call table columns ───────────────────────────────────────
+
+type Call = Record<string, unknown>
+
+const callColumns: IColumn<Call>[] = [
+  {
+    key: 'direction',
+    header: '',
+    className: 'w-10',
+    render: (c) => DIRECTION_ICON[(c.direction as string) ?? 'inbound'] ?? DIRECTION_ICON.inbound,
+  },
+  {
+    key: 'caller',
+    header: 'Von / An',
+    render: (c) => (
+      <div>
+        <p className="text-sm font-medium text-gray-900">{formatPhone(c.caller_number as string)}</p>
+        {c.callee_number ? <p className="text-xs text-gray-500">{formatPhone(c.callee_number as string)}</p> : null}
+      </div>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (c) => (
+      <Badge variant={variantFor(c.status as string, CALL_STATUS_VARIANT)}>
+        {c.status as string}
+      </Badge>
+    ),
+  },
+  {
+    key: 'duration',
+    header: 'Dauer',
+    render: (c) => (
+      <span className="text-sm text-gray-500">
+        {(c.duration_seconds as number) > 0 ? formatDuration(c.duration_seconds as number) : '–'}
+      </span>
+    ),
+  },
+  {
+    key: 'sentiment',
+    header: 'Stimmung',
+    render: (c) => c.sentiment ? (
+      <Badge variant={variantFor(c.sentiment as string, SENTIMENT_VARIANT)}>
+        {c.sentiment as string}
+      </Badge>
+    ) : <span className="text-xs text-gray-400">–</span>,
+  },
+  {
+    key: 'summary',
+    header: 'Zusammenfassung',
+    render: (c) => c.summary
+      ? <p className="text-sm text-gray-600 truncate max-w-xs">{c.summary as string}</p>
+      : <span className="text-xs text-gray-400">–</span>,
+  },
+  {
+    key: 'started_at',
+    header: 'Zeitpunkt',
+    render: (c) => (
+      <span className="text-sm text-gray-500">
+        {c.started_at ? new Date(c.started_at as string).toLocaleString('de-DE') : '–'}
+      </span>
+    ),
+  },
+]
+
+// ── Page ─────────────────────────────────────────────────────
 
 export default function VoiceAgentPage() {
-  const [stats, setStats] = useState<IVoiceAgentStat[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate()
+  const { data: stats, isLoading: statsLoading } = useVoiceAgentStats()
+  const { data: calls, isLoading: callsLoading } = useVoiceAgentCalls(20)
 
-  useEffect(() => {
-    // Mock data – will be replaced with API call
-    const timer = setTimeout(() => {
-      setStats([
-        {
-          id: '1',
-          label: 'Erreichbarkeit',
-          value: '94.2',
-          unit: '%',
-          trend: 'up',
-          icon: <Phone size={24} className="text-primary" />,
-        },
-        {
-          id: '2',
-          label: 'CSAT Score',
-          value: '4.6',
-          unit: '/ 5',
-          trend: 'up',
-          icon: <Star size={24} className="text-primary" />,
-        },
-        {
-          id: '3',
-          label: 'Durchschnittliche Gesprächsdauer',
-          value: '3:42',
-          unit: 'min',
-          trend: 'stable',
-          icon: <Clock size={24} className="text-primary" />,
-        },
-        {
-          id: '4',
-          label: 'Anrufe heute',
-          value: '127',
-          unit: '',
-          trend: 'down',
-          icon: <Users size={24} className="text-primary" />,
-        },
-      ])
-      setIsLoading(false)
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [])
+  const isLoading = statsLoading || callsLoading
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Voice Agent</h1>
-          <p className="text-gray-500 mt-1">KPI-Tracking für den Voice Agent</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Voice Agent"
+        subtitle="Anrufe, Erreichbarkeit und Performance"
+        actionLabel="Konfiguration"
+        actionIcon={Settings}
+        onAction={() => navigate('/voice-agent/config')}
+      />
 
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
-        </div>
-      ) : stats.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.id}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-2 bg-primary-50 rounded-lg">
-                  {stat.icon}
+      {isLoading ? <Spinner /> : (
+        <>
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <Percent size={20} className="text-green-600" />
                 </div>
-                {TREND_ICON[stat.trend] ?? TREND_ICON.stable}
               </div>
+              <p className="text-sm text-gray-500">Erreichbarkeit</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {stats?.reachabilityPercent ?? 0}<span className="text-sm font-normal text-gray-500 ml-1">%</span>
+              </p>
+            </Card>
 
-              <h3 className="text-sm font-medium text-gray-500 mb-1">
-                {stat.label}
-              </h3>
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Users size={20} className="text-blue-600" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">Anrufe heute</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats?.callsToday ?? 0}</p>
+              <p className="text-xs text-gray-400 mt-1">Diese Woche: {stats?.callsThisWeek ?? 0}</p>
+            </Card>
 
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-gray-900">
-                  {stat.value}
-                </span>
-                {stat.unit && (
-                  <span className="text-sm text-gray-500">{stat.unit}</span>
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <Clock size={20} className="text-purple-600" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">Durchschn. Dauer</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {stats ? formatDuration(stats.avgDurationSeconds) : '–'}<span className="text-sm font-normal text-gray-500 ml-1">min</span>
+              </p>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                  <PhoneMissed size={20} className="text-red-600" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">Verpasste Anrufe</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats?.missedCalls ?? 0}</p>
+              <p className="text-xs text-gray-400 mt-1">Gesamt: {stats?.totalCalls ?? 0}</p>
+            </Card>
+          </div>
+
+          {/* Sentiment breakdown */}
+          {stats && stats.totalCalls > 0 && (
+            <Card className="p-6 mb-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Stimmungsanalyse</h2>
+              <div className="flex gap-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <span className="text-sm text-gray-600">Positiv: {stats.sentiment.positive}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-gray-400" />
+                  <span className="text-sm text-gray-600">Neutral: {stats.sentiment.neutral}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <span className="text-sm text-gray-600">Negativ: {stats.sentiment.negative}</span>
+                </div>
+              </div>
+              {/* Progress bar */}
+              <div className="flex h-2 rounded-full overflow-hidden mt-3 bg-gray-100">
+                {stats.totalCalls > 0 && (
+                  <>
+                    <div className="bg-green-500" style={{ width: `${(stats.sentiment.positive / stats.totalCalls) * 100}%` }} />
+                    <div className="bg-gray-400" style={{ width: `${(stats.sentiment.neutral / stats.totalCalls) * 100}%` }} />
+                    <div className="bg-red-500" style={{ width: `${(stats.sentiment.negative / stats.totalCalls) * 100}%` }} />
+                  </>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-          <Phone size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">Keine Daten</h3>
-          <p className="text-gray-500 mt-1">Es liegen noch keine Voice Agent Daten vor.</p>
-        </div>
+            </Card>
+          )}
+
+          {/* Call history */}
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Letzte Anrufe</h2>
+          {calls && calls.length > 0 ? (
+            <DataTable columns={callColumns} data={calls} rowKey={(c) => c.id as string} />
+          ) : (
+            <EmptyState icon={Phone} title="Keine Anrufe" description="Es wurden noch keine Anrufe aufgezeichnet. Verbinde einen Voice Agent Provider via Webhook." />
+          )}
+        </>
       )}
     </div>
   )

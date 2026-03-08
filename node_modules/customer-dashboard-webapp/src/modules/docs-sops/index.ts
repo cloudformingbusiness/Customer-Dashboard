@@ -15,7 +15,7 @@ export const docsSopsModule: IModule = {
     { path: '/docs', element: DocsSopsPage },
   ],
   navItems: [
-    { label: 'Dokumente', path: '/docs', icon: 'FileText' },
+    { label: 'Dokumente', path: '/docs', icon: 'FileText', group: 'planning' },
   ],
   apiPrefix: '/api/docs-sops',
 }

@@ -15,7 +15,7 @@ export const iamModule: IModule = {
     { path: '/settings', element: IamPage },
   ],
   navItems: [
-    { label: 'Einstellungen', path: '/settings', icon: 'Shield' },
+    { label: 'Einstellungen', path: '/settings', icon: 'Shield', group: 'admin' },
   ],
   apiPrefix: '/api/iam',
 }

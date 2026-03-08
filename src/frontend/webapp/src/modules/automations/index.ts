@@ -15,7 +15,7 @@ export const automationsModule: IModule = {
     { path: '/automations', element: AutomationsPage },
   ],
   navItems: [
-    { label: 'Automationen', path: '/automations', icon: 'Workflow' },
+    { label: 'Automationen', path: '/automations', icon: 'Workflow', group: 'operations' },
   ],
   apiPrefix: '/api/automations',
 }

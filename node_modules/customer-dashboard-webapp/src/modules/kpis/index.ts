@@ -15,7 +15,7 @@ export const kpisModule: IModule = {
     { path: '/kpis', element: KpisPage },
   ],
   navItems: [
-    { label: 'KPIs', path: '/kpis', icon: 'BarChart3' },
+    { label: 'KPIs', path: '/kpis', icon: 'BarChart3', group: 'operations' },
   ],
   apiPrefix: '/api/kpis',
 }

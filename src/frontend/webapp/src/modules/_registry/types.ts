@@ -6,10 +6,13 @@ export interface IModuleRoute {
   children?: IModuleRoute[]
 }
 
+export type NavGroup = 'main' | 'operations' | 'planning' | 'addons' | 'admin'
+
 export interface INavItem {
   label:     string
   path:      string
   icon:      string
+  group?:    NavGroup
   badge?:    () => number | string | null
   children?: INavItem[]
 }
