@@ -40,3 +40,4 @@
 # Docker lokale Overrides
 
 # Lokale Env
+node_modules

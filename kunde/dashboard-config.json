@@ -12,7 +12,7 @@
   ],
   "addons": [],
   "features": {
-    "2fa": false,
-    "sso": false
+    "2fa": true,
+    "sso": true
   }
 }
